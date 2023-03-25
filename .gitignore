@@ -326,6 +326,6 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/python,osx,windows,linux,visualstudiocode,pycharm
 # Add by project team
 .idea
-src/parser_csv
-src/car
-src/station
+parser_csv
+car_t
+station

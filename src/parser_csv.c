@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-csv_reader_t create_reader_default(char* filename) {
+#include "parser_csv.h"
+
+csv_reader_t create_reader_default(const char* filename) {
     csv_reader_t reader = {
         .filename = filename,
         .separator = ";",
@@ -10,7 +12,7 @@ csv_reader_t create_reader_default(char* filename) {
     return reader;
 }
 
-csv_reader_t create_reader(char* filename, char *separator, int max_line_size) {
+csv_reader_t create_reader(const char* filename, const char *separator, int max_line_size) {
     csv_reader_t reader = {
         .filename = filename, 
         .separator = separator,
@@ -18,7 +20,7 @@ csv_reader_t create_reader(char* filename, char *separator, int max_line_size) {
     return reader;
 }
 
-int parse_to_struct_car(csv_reader_t* reader, car array[]) {
+int parse_to_car(csv_reader_t* reader, car_t array[]) {
     FILE* file = fopen(reader->filename, "r");
     if (file == NULL) {
         fprintf(stderr, "Impossible de trouver le fichier '%s'\n", reader->filename);
@@ -42,22 +44,25 @@ int parse_to_struct_car(csv_reader_t* reader, car array[]) {
         while (field != NULL) {
 
             // --- parsing
-            switch (column_index)
-            {
-            case 0:
-                copy = malloc(strlen(field) + 1);
-                strcpy(copy, field);
-                array[line_index].name = copy;
-                break;
-            case 1:
-                array[line_index].range = atoi(field);
-                break;
-            case 2:
-                array[line_index].battery = atof(field);
-                break;
-            case 3:
-                array[line_index].consumption = atoi(field);
-                break;
+            switch (column_index) {
+                case 0:
+                    copy = malloc(strlen(field) + 1);
+                    strcpy(copy, field);
+                    array[line_index].name = copy;
+                    break;
+                case 1:
+                    array[line_index].range = atoi(field);
+                    break;
+                case 2:
+                    array[line_index].battery = atof(field);
+                    break;
+                case 3:
+                    array[line_index].consumption = atoi(field);
+                    break;
+
+                default:
+                    fprintf(stderr, "Parsing du fichier '%s' colonne en trop\n", reader->filename);
+                    return EXIT_FAILURE;
             }
             // --- end
 
@@ -71,7 +76,11 @@ int parse_to_struct_car(csv_reader_t* reader, car array[]) {
 
     fclose(file);
     return EXIT_SUCCESS;
-}  
+}
 
-
-
+int free_parsed_car(car_t array[]) {
+    for (int i = 0; i < DATASET_CARS_LINES; i ++) {
+        free(array[i].name);
+    }
+    return EXIT_SUCCESS;
+}

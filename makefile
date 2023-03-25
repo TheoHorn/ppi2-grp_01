@@ -6,7 +6,8 @@ ALL_EXECUTABLES=parser_csv
 
 all: $(ALL_EXECUTABLES)
 
-test_parser_csv: src/test/csv_loading_test.c
+parser_csv: src/test/csv_loading_test.c src/parser_csv.c src/parser_csv.h
+	${CC} ${CFLAGS} -o $@ $<
 
 clean:
 	rm -f *.o ${ALL_EXECUTABLES}

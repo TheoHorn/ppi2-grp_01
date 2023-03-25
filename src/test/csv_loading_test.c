@@ -1,19 +1,22 @@
 #include <time.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <assert.h>
+
+#include "../parser_csv.c"
+#include "utils.c"
 
 int main() {
     clock_t start_time = clock();
-    csv_reader_t reader = create_reader_default("cars.csv");
-    car t[299];
-    parse_to_struct_car(&reader, t);
-    clock_t end_time = clock(); // get end time
-    double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC; // calculate time taken
-    printf("Time taken: %f seconds\n", time_taken);
+    csv_reader_t reader = create_reader_default(DATASET_PATH_CARS);
+    car_t cars[DATASET_CARS_LINES];
 
-    for (int i = 0; i < 299; i ++) {
-        //printf("%s, %i, %f, %i\n", t[i].name, t[i].range, t[i].battery, t[i].consumption);
-        free(t[i].name);
-    }
+    assert (parse_to_car(&reader, cars) == 0);
+    printf("Parsing of 'cars.csv' into car_t[] done successfully\n");
 
+    clock_t end_time = clock();
+    double time_taken_parse_cars = print_time_taken(start_time, end_time);
+    printf("Time taken to parse cars: %f seconds\n", time_taken_parse_cars);
+
+    assert(free_parsed_car(cars) == 0);
+    printf("Freeing of car_t[] done successfully\n");
 }
