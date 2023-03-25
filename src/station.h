@@ -1,7 +1,7 @@
 #ifndef STATION_H
 #define STATION_H
 
-#include "bool.h"
+#include "utils/bool.h"
 
 typedef struct station_t {
     int id; // id of the station
