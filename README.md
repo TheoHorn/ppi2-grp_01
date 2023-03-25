@@ -9,3 +9,12 @@ Gérald Oster <<gerald.oster@telecomnancy.eu>>
 - DEVAUX Paul <<Paul.Deveaux@telecomnancy.eu>>  
 - HORNBERGER Théo <<Theo.Hornberger@telecomnancy.eu>>  
 - TEMPESTINI Terry <<Terry.Tempestini@telecomnancy.eu>>  
+
+# Utilisation
+
+## test de l'application
+```shell
+# compile la partie parsing de csv en C et lance les tests
+make parser_csv
+./parser_csv
+```
