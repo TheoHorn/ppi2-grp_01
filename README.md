@@ -1,4 +1,4 @@
-«Projet Pluridisciplinaire d'Informatique Intégrative 2» (2022-2023) 
+# Projet Pluridisciplinaire d'Informatique Intégrative 2 (2022-2023) 
 
 Olivier Festor <<olivier.festor@telecomnancy.eu>>   
 Gérald Oster <<gerald.oster@telecomnancy.eu>>  
