@@ -106,7 +106,6 @@ int parse_to_station(csv_reader_t* reader, station_t array[]) {
         }
         array[line_index].id = line_index;
         field = strtok(line, reader->separator);
-
         while (field != NULL) {
             // --- parsing
             switch (column_index) {

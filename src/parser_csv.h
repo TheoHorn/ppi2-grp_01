@@ -7,7 +7,7 @@
 #define DATASET_PATH_CARS "dataset/cars.csv"
 #define DATASET_CARS_LINES 299
 #define DATASET_PATH_STATIONS "dataset/stations.csv"
-#define DATASET_STATIONS_LINES 42030
+#define DATASET_STATIONS_LINES 17451
 
 // struct to easily read a csv file
 typedef struct csv_reader_t {

@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-Wall -Wextra -pedantic
 CFLAGS+=-O0 -g3 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls
 
-ALL_EXECUTABLES=parser_csv
+ALL_EXECUTABLES=parser_csv_test calculate_distance_test
 
 all: $(ALL_EXECUTABLES)
 

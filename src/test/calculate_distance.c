@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "../station.c"
+#include "utils.c"
 
 station_t* fill_array() {
     station_t *stations = malloc(sizeof(station_t) * 6);
@@ -100,9 +102,21 @@ void test_calculate_distance() {
     assert(distance(&stations[3], &stations[2]) == 709); // 709.4
     assert(distance(&stations[3], &stations[2]) == 709);
 
+    clock_t start_time = clock();
     assert(distance(&stations[4], &stations[5]) == 536); // 536.255
     assert(distance(&stations[5], &stations[4]) == 536);
+    clock_t end_time = clock();
+    double time_taken_parse_cars = print_time_taken(start_time, end_time);
+    printf("Time taken to calculate distance: %f seconds\n", time_taken_parse_cars);
 
+    start_time = clock();
+    int k = 1000000;
+    for (int i = 0; i < k; i++) {
+        distance(&stations[i%5], &stations[(i + i) % 5]);
+    }
+    end_time = clock();
+    time_taken_parse_cars = print_time_taken(start_time, end_time);
+    printf("Time taken to calculate %i distance: %f seconds\n", k, time_taken_parse_cars);
 
 }
 
