@@ -47,12 +47,11 @@ void parsing_stations_test() {
     printf("Time taken to parse stations: %f seconds\n", time_taken_parse_stations);
 
     for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
-        /*printf("ligne: %d - %s, [%lf, %lf], capacité = %d, puissance=%d kW, longitude/latitude [%f,%f]\n",
-               stations[i].id + 2, stations[i].name, stations[i].x, stations[i].y, stations[i].capacity, stations[i].power, stations[i].longitude, stations[i].latitude);
+        /* printf("ligne: %d - %s, capacité = %d, puissance=%d kW, longitude/latitude [%f,%f]\n",
+               stations[i].id + 2, stations[i].name, stations[i].capacity, stations[i].power, stations[i].longitude, stations[i].latitude);
         */
         assert(stations[i].capacity > 0);
         assert(stations[i].power > 0 && stations[i].power < 1000);
-        assert(stations[i].x != 0.0 || stations[i].y != 0.0);
         assert(stations[i].longitude != 0.0 || stations[i].latitude != 0.0);
     }
     printf("Asserts of station_t[] done successfully\n");

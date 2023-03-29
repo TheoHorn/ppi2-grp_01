@@ -9,7 +9,6 @@ typedef struct station_t {
     double latitude, longitude; // coordinate with longitude and latitude
     int capacity; // capacity maximum of the station
     int power; // power of the station in kW
-    double x, y; // coordinate in x y of the station
     bool is_free; // is the station free
 
 } station_t ;

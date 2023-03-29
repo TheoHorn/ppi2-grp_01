@@ -135,27 +135,21 @@ int parse_to_station(csv_reader_t* reader, station_t array[]) {
                     break;
 
                 case 1:
-                    sscanf(field, "\"[%lf", &array[line_index].x);
-                    break;
-                case 2:
-                    sscanf(field, "%lf]\"", &array[line_index].y);
-                    break;
-                case 3:
                     array[line_index].capacity = atoi(field);
                     break;
-                case 4:
+                case 2:
                     array[line_index].power = atoi(field);
                     if (array[line_index].power == 0) { array[line_index].power = 10; } // if the power is 0 (not register in the csv , we set it to 10)
                     while (array[line_index].power >= 1000) { array[line_index].power /= 10; } // convert the power in kW (if it's in W)
                     break;
 
-                case 5:
+                case 3:
                     array[line_index].is_free = (strcmp(field, "true") || strcmp(field, "TRUE") || strcmp(field, "1") ) ? true : false;
                     break;
-                case 6:
+                case 4:
                     array[line_index].longitude = atof(field);
                     break;
-                case 7:
+                case 5:
                     array[line_index].latitude = atof(field);
                     break;
 
