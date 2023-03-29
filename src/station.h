@@ -13,4 +13,10 @@ typedef struct station_t {
 
 } station_t ;
 
+// return the distance between two station in km
+// we use pythagore methode because of performance issue
+// and since the France is "small enough" to use this methode without to much mistake
+// we get 922.3 km with pythagore and 922.9 with haversine
+int distance(station_t *station1, station_t *station2);
+
 #endif
