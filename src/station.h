@@ -1,12 +1,15 @@
 #ifndef STATION_H
 #define STATION_H
 
-#include "utils/bool.h"
+#include <stdbool.h>
+
+
+#define RADIAN 0.01745329251994329576923690768489
 
 typedef struct station_t {
     int id; // id of the station
     char *name; // name of the station
-    double latitude, longitude; // coordinate with longitude and latitude
+    double latitude, longitude; // coordinate with longitude and latitude converted in radian for calculation
     int capacity; // capacity maximum of the station
     int power; // power of the station in kW
     bool is_free; // is the station free

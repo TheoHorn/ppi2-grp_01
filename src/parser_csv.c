@@ -147,10 +147,10 @@ int parse_to_station(csv_reader_t* reader, station_t array[]) {
                     array[line_index].is_free = (strcmp(field, "true") || strcmp(field, "TRUE") || strcmp(field, "1") ) ? true : false;
                     break;
                 case 4:
-                    array[line_index].longitude = atof(field);
+                    array[line_index].longitude = atof(field) * RADIAN;
                     break;
                 case 5:
-                    array[line_index].latitude = atof(field);
+                    array[line_index].latitude = atof(field) * RADIAN;
                     break;
 
                 default:
