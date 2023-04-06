@@ -1,0 +1,95 @@
+#include <gtk/gtk.h>
+#include <cairo.h>
+
+#include "parser_csv.c"
+
+
+// Fonction de dessin
+gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
+    
+    // Récupérer les données
+    csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
+    station_t stations[DATASET_STATIONS_LINES];
+    parse_to_station(&reader, stations);
+    
+    // Dessiner la France
+    // Dessiner un fond noir
+    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    cairo_rectangle(cr, 0, 0, 600, 400);
+    cairo_fill (cr);
+
+    // Dessiner les stations
+    cairo_set_source_rgb(cr, 1, 0, 0);
+    for (int i = 0; i < 5000; i++) {
+        cairo_arc(cr, stations[i].longitude*2000 + 200, 1800 - stations[i].latitude*2000, 1, 0, 2 * G_PI);
+        cairo_fill(cr);
+    }
+    return TRUE;
+}
+
+void on_button_clicked(GtkWidget *button, gpointer data) {
+    // Récupérer la valeur sélectionnée dans la liste déroulante
+    GtkComboBox *combo_box = GTK_COMBO_BOX(data);
+    gint active = gtk_combo_box_get_active(combo_box);
+
+    if (active >= 0) {
+        // Récupérer la chaîne de caractères correspondante
+        GtkTreeModel *model = gtk_combo_box_get_model(combo_box);
+        GtkTreeIter iter;
+        gtk_tree_model_iter_nth_child(model, &iter, NULL, active);
+        gchar *selected_value;
+        gtk_tree_model_get(model, &iter, 0, &selected_value, -1);
+
+        // Afficher la valeur sélectionnée dans la console
+        g_print("Vous avez sélectionné : %s\n", selected_value);
+    }
+}
+
+int main(int argc, char *argv[]) {
+    gtk_init(&argc, &argv);
+
+    // Créer une fenêtre
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "PPII 2023");
+    gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+
+    // Créer un conteneur pour les widgets
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(window), box);
+
+    // Créer l'image de la France
+    GtkWidget *drawing_area = gtk_drawing_area_new();
+    gtk_widget_set_size_request(drawing_area, 600, 400);
+    g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(on_draw), NULL);
+    gtk_box_pack_start(GTK_BOX(box), drawing_area, FALSE, FALSE, 0);
+
+    // Créer une liste déroulante
+    GtkListStore *list_store = gtk_list_store_new(1, G_TYPE_STRING);
+    GtkTreeIter iter;
+    gtk_list_store_append(list_store, &iter);
+    gtk_list_store_set(list_store, &iter, 0, "1", -1);
+    gtk_list_store_append(list_store, &iter);
+    gtk_list_store_set(list_store, &iter, 0, "2", -1);
+    gtk_list_store_append(list_store, &iter);
+    gtk_list_store_set(list_store, &iter, 0, "3", -1);
+    
+    GtkWidget *combo_box = gtk_combo_box_new_with_model(GTK_TREE_MODEL(list_store));
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo_box), renderer, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo_box), renderer, "text", 0, NULL);
+    gtk_box_pack_start(GTK_BOX(box), combo_box, FALSE, FALSE, 0);
+
+    // Créer un bouton de validation
+    GtkWidget *button = gtk_button_new_with_label("Valider");
+    g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), combo_box);
+    gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
+
+    // Afficher la fenêtre
+    gtk_widget_show_all(window);
+
+    // Démarrer la boucle principale GTK
+    gtk_main();
+
+    return 0;
+}
+
