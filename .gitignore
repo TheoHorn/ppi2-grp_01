@@ -324,10 +324,17 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,osx,windows,linux,visualstudiocode,pycharm
+
+# C ignore
+*.o
+*.out
+*.exe
+
 # Add by project team
 .idea
 parser_csv_test
 car_t
 station
 calculate_distance_test
-ig
+interface_graphique
+search_button

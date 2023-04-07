@@ -1,8 +1,10 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-#include "parser_csv.c"
+#include "parser_csv.h"
 
+int DEPART = -1;
+int ARRIVEE = -1;
 
 // Fonction de dessin
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
@@ -19,9 +21,19 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     cairo_fill (cr);
 
     // Dessiner les stations
-    cairo_set_source_rgb(cr, 1, 0, 0);
-    for (int i = 0; i < 5000; i++) {
-        cairo_arc(cr, stations[i].longitude*2000 + 200, 1800 - stations[i].latitude*2000, 1, 0, 2 * G_PI);
+    int radius;
+    for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
+        if (stations[i].id == DEPART){
+            // to do
+            g_print("coucou");
+            radius = 3;
+            cairo_set_source_rgb(cr, 0, 1, 0);
+            cairo_arc(cr, stations[i].longitude*2000 + 200, 1800 - stations[i].latitude*2000, radius, 0, 2 * G_PI);
+        }else{
+            radius = 1;
+            cairo_set_source_rgb(cr, 1, 0, 0);
+            cairo_arc(cr, stations[i].longitude*2000 + 200, 1800 - stations[i].latitude*2000, radius, 0, 2 * G_PI);
+        }
         cairo_fill(cr);
     }
     return TRUE;
@@ -39,10 +51,13 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
         gtk_tree_model_iter_nth_child(model, &iter, NULL, active);
         gchar *selected_value;
         gtk_tree_model_get(model, &iter, 0, &selected_value, -1);
-
-        // Afficher la valeur sélectionnée dans la console
-        g_print("Vous avez sélectionné : %s\n", selected_value);
+        g_print("Selected value: %s", selected_value);
+        DEPART = atoi(selected_value);
     }
+    
+   // GtkWidget *gtkwindow = GTK_WINDOW(data);
+   // gtk_container_foreach(GTK_CONTAINER(gtkwindow), G_CALLBACK(gtk_widget_destroy), NULL);
+   
 }
 
 int main(int argc, char *argv[]) {
