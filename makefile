@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-std=c99 -Wall -Wextra -pedantic -fdiagnostics-color=always
 CFLAGS+=-O0 -g3 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls
 CFLAGS+= `pkg-config --cflags gtk+-3.0`
-LDFLAGS+=-fsanitize=address
+LDFLAGS+= -fsanitize=address
 LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
 
