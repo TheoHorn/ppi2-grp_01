@@ -4,12 +4,13 @@
 #include <stdbool.h>
 #include <float.h>
 #include <limits.h>
+#include <assert.h>
 
 #include "station.h"
 #include "parser_csv.h"
 #include "dijkstra.h"
 
-#define dmax 7000
+#define dmax 200
 #define dmin 0
 #define ININITY 999999
 
@@ -18,7 +19,7 @@ int dijkstra(station_t depart, station_t arrivee, station_t *stations, int nbSta
     int* distances = calloc(nbStations, sizeof(int));
 
     for(int i = 0; i < nbStations; i++){
-        distances[i] = ININITY; // DBL_MAX is the maximum value of a double
+        distances[i] = ININITY;
         predecessors[i] = -1;
     }
 
@@ -31,17 +32,7 @@ int dijkstra(station_t depart, station_t arrivee, station_t *stations, int nbSta
         int* voisines = stationVoisines(start, visited, dmax, stations, nbStations);
         updateNeighbors(start, voisines, distances, stations, predecessors);
 
-        /*printf("\ncurrent_station : %d", current_station);
-        for(int i = 0; i < nbStations; i++){
-            printf("visited : %d\n", visited[i]);
-        }
-        for(int i = 0; i < nbStations; i++){
-            printf("distances : %d\n", distances[i]);
-        }*/
-
         int minValue = min_distance_index(distances, visited, nbStations);
-
-        //printf("\nminValue : %d", minValue);
 
         freeVoisines(voisines);
 
@@ -52,12 +43,6 @@ int dijkstra(station_t depart, station_t arrivee, station_t *stations, int nbSta
             return resultat;
         }
 
-        /*if(minValue == arrivee.id){
-            int resultat = distances[arrivee.id];
-            free(visited);
-            free(distances);
-            return resultat;
-        }*/
         start = &stations[minValue];
         current_station = minValue;
     }
@@ -117,31 +102,35 @@ int min_distance_index(int *distances, int *visited, int n){
 }
 
 int main() {
-    // tests
-    station_t stations[] = {
-        {0, "OuestCharge - E-Twin - Saint-Hilaire-de-Loulay - Giraudet", -1.9111, 48.0405, 2, 22, false},
-        {1, "Balleroy-sur-Drôme; Rue du Sapin", -0.9795, 48.5623, 2, 22, false},
-        {2, "CCTLB VAXAINVILLE", 6.0347, 48.9048, 2, 22000, false},
-        {3, "Intermarché ANNEYRON", 5.1986, 45.1247, 3, 22, false},
-        {4, "Riorges; Parking Place Jean Cocteau", 4.2472, 45.9422, 2, 22, false},
-        {5, "SIEG63 - ePremium - Clermont Ferrand - Salins", 2.7689, 46.4069, 2, 25, false}
-    };
-
-    int n = sizeof(stations) / sizeof(stations[0]); // 5 stations
+    csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
+    station_t stations[DATASET_STATIONS_LINES];
+    assert(parse_to_station(&reader, stations) == 0);
+    
+    int n = sizeof(stations) / sizeof(stations[0]); // number of stations
 
     int* predecessors = calloc(n, sizeof(int));
 
-    int distMin = dijkstra(stations[0], stations[2], stations, n, predecessors);
+    int depart = 1;
+    int arrivee = 2200;
+   
+    clock_t t=0;
+    int distMin = dijkstra(stations[depart], stations[arrivee], stations, n, predecessors);
+    t = clock() - t;
 
-    printf("\nDistance min between station 0 and station 5: %d km\n", distMin);
+    printf("\nDistance min between station %d and station %d: %d km\n",depart, arrivee, distMin);
     printf("Path: ");
-    int i = 5;
+    int i = arrivee;
+    int d=0;
     while(predecessors[i] != -1){
+        d += distance(&stations[i], &stations[predecessors[i]]);
         printf("%d <- ", i);
         i = predecessors[i];
     }
-    printf("%d", i);
+    printf("%d\nDistance directe = %d km", i, d);
+    printf("\nTime: %fs\n", ((double)t)/CLOCKS_PER_SEC);
 
     free(predecessors);
+    free_parsed_station(stations);
+
     return 0;
 }
