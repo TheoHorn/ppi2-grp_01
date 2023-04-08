@@ -41,6 +41,16 @@ void on_search_button_clicked(GtkButton *button, gpointer user_data)
     g_print("Fin de la recherche.\n");
 }
 
+void set_label_texts(GtkWidget *box, char **new_labels, int num_labels) {
+    GList *children = gtk_container_get_children(GTK_CONTAINER(box));
+    for (int i = 0; i < num_labels && i < g_list_length(children); i++) {
+        GtkWidget *child = GTK_WIDGET(g_list_nth_data(children, i));
+        gtk_label_set_text(GTK_LABEL(child), new_labels[i]);
+    }
+    g_list_free(children);
+}
+
+
 int main(int argc, char *argv[])
 {
     // Initialiser GTK+
@@ -51,13 +61,35 @@ int main(int argc, char *argv[])
     GtkWidget *search_entry = gtk_entry_new();
     GtkWidget *search_button = gtk_button_new_with_label("Rechercher");
 
+    // Création d'un GtkGrid pour ajouter les deux boxes
+    GtkWidget *grid = gtk_grid_new();
+    gtk_container_add(GTK_CONTAINER(window), grid);
+
     // Créer une boîte horizontale pour les éléments de la barre de recherche
     GtkWidget *search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_box_pack_start(GTK_BOX(search_box), search_entry, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(search_box), search_button, FALSE, FALSE, 0);
 
-    // Ajouter la boîte horizontale à la fenêtre
-    gtk_container_add(GTK_CONTAINER(window), search_box);
+
+    // Création des labels
+    GtkWidget *label1 = gtk_label_new("Label 1");
+    GtkWidget *label2 = gtk_label_new("Label 2");
+    GtkWidget *label3 = gtk_label_new("Label 3");
+    GtkWidget *label4 = gtk_label_new("Label 4");
+    GtkWidget *label5 = gtk_label_new("Label 5");
+
+    // Création d'un conteneur vertical pour les labels
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_container_set_border_width(GTK_CONTAINER(box), 10);
+    gtk_box_pack_start(GTK_BOX(box), label1, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), label2, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), label3, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), label4, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), label5, FALSE, FALSE, 0);
+
+    gtk_grid_attach(GTK_GRID(grid), box, 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), search_box, 0, 0, 1, 1);
+    
 
     // Connecter la fonction de rappel au signal "clicked" du bouton "Rechercher"
     g_signal_connect(search_button, "clicked", G_CALLBACK(on_search_button_clicked), search_entry);

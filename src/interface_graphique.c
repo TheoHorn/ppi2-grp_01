@@ -3,6 +3,10 @@
 
 #include "parser_csv.h"
 
+
+#define DRAWING_WIDTH 850
+#define DRAWING_HEIGHT 550
+
 int DEPART = -1;
 int ARRIVEE = -1;
 
@@ -15,9 +19,14 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     parse_to_station(&reader, stations);
     
     // Dessiner la France
-    // Dessiner un fond noir
-    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-    cairo_rectangle(cr, 0, 0, 1000, 1000);
+    // Dessiner une bordure
+    cairo_set_source_rgba(cr, 0,0,0,1);
+    cairo_rectangle(cr, 0, 0, DRAWING_WIDTH, DRAWING_HEIGHT);
+    cairo_fill (cr);
+    // Dessiner un fond coloré
+    cairo_set_source_rgb(cr, 0.909, 0.862, 0.792);
+    int border_width = 5;
+    cairo_rectangle(cr, border_width, border_width, DRAWING_WIDTH - 2*border_width, DRAWING_HEIGHT - 2*border_width);
     cairo_fill (cr);
 
     int idDepart = -1;
@@ -30,22 +39,42 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
         }else if(stations[i].id == ARRIVEE){
             idArrivée = i;
         }else{
-            radius = 1;
-            cairo_set_source_rgb(cr, 1, 0, 0);
+            //contour noir
+            radius = 3;
+            cairo_set_source_rgba(cr, 0, 0, 0,1);
             cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+            //remplissage orange
+            radius = 2;
+            cairo_set_source_rgba(cr, 0.7, 0.3, 0,1);
+            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
         }
-        cairo_fill(cr);
     }
     if(idDepart != -1){
+        //contour noir
+        radius = 6;
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_arc(cr, stations[idDepart].longitude*3000 + 300, 2700 - stations[idDepart].latitude*3000, radius, 0, 2 * G_PI);
+        cairo_fill(cr);
+
+        //remplissage vert
         radius = 5;
-        cairo_set_source_rgb(cr, 0, 1, 0);
+        cairo_set_source_rgba(cr, 0, 1, 0,1);
         cairo_arc(cr, stations[idDepart].longitude*3000 + 300, 2700 - stations[idDepart].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
     }
     
     if (idArrivée != -1){
+        //contour noir
+        radius = 6;
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_arc(cr, stations[idArrivée].longitude*3000 + 300, 2700 - stations[idArrivée].latitude*3000, radius, 0, 2 * G_PI);
+        cairo_fill(cr);
+
+        //remplissage bleu
         radius = 5;
-        cairo_set_source_rgb(cr, 0, 1, 1);
+        cairo_set_source_rgba(cr, 1, 1, 0,1);
         cairo_arc(cr, stations[idArrivée].longitude*3000 + 300, 2700 - stations[idArrivée].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
     }
@@ -69,7 +98,7 @@ void on_button_clicked_dep(GtkWidget *button, gpointer data) {
         DEPART = atoi(selected_value);
         GtkWidget *drawing_area = GTK_WIDGET(data);
         // Met à jour la zone de dessin
-        gtk_widget_queue_draw_area(drawing_area, 0, 0, 1000, 1000);
+        gtk_widget_queue_draw_area(drawing_area, 0, 0, DRAWING_WIDTH, DRAWING_HEIGHT);
     }  
 }
 
@@ -89,7 +118,7 @@ void on_button_clicked_arr(GtkWidget *button, gpointer data) {
         ARRIVEE = atoi(selected_value);
         GtkWidget *drawing_area = GTK_WIDGET(data);
         // Met à jour la zone de dessin
-        gtk_widget_queue_draw_area(drawing_area, 0, 0, 1000, 1000);
+        gtk_widget_queue_draw_area(drawing_area, 0, 0, DRAWING_WIDTH, DRAWING_HEIGHT);
     }  
 }
 
@@ -107,7 +136,7 @@ int main(int argc, char *argv[]) {
 
     // Créer l'image de la France
     GtkWidget *drawing_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request(drawing_area, 550, 550);
+    gtk_widget_set_size_request(drawing_area, DRAWING_WIDTH, DRAWING_HEIGHT);
     g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(on_draw), NULL);
     gtk_box_pack_start(GTK_BOX(box), drawing_area, FALSE, FALSE, 0);
 
