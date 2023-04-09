@@ -115,20 +115,19 @@ void displayPath(int* path, int length){
 }
 
 int decreaseNumberStations(station_t* stations ,int*path, int*newPath, int length, int autonomy){
+    int c=0;
     int currentStation = path[0];
-    newPath[0] = path[0];
+    int currentDistance = 0;
+    newPath[c] = currentStation;
     for(int i = 1; i < length; i++){
-        while(autonomy - distance(&stations[currentStation], &stations[path[i]]) > 0 && i < length){
-            autonomy = autonomy - distance(&stations[currentStation], &stations[path[i]]);
-            i++;
+        currentDistance += distance(&stations[currentStation], &stations[path[i]]);
+        if(currentDistance > autonomy){
+            newPath[c++] = path[i-1];
+            currentStation = path[i-1];
+            currentDistance = 0;
         }
     }
-
-    for(int i = 0; i < length; i++){
-        //printf("%d ", newPath[i]);
-    }
-
-    return length;
+    return c;
 }
 
 int main() {
@@ -151,11 +150,18 @@ int main() {
     int* path = malloc(sizeof(int) * DATASET_STATIONS_LINES);
     int length = predecessorsToPath(predecessors,path,arrivee);
 
+    displayPath(path, length);
+
+    printf("\nPath with less stations: ");
+
     int* newPath = malloc(sizeof(int) * DATASET_STATIONS_LINES);
     int newLength = decreaseNumberStations(stations, path, newPath, length, 200);
-    free(newPath);
 
-    displayPath(path, length);
+    for(int i = 0; i < newLength; i++){
+        printf("%d-->", newPath[i]);
+    }
+
+    free(newPath);
 
     printf("\nDistance directe = %d km", distance(&stations[depart], &stations[arrivee]));
     printf("\nTime: %fs\n", ((double)t)/CLOCKS_PER_SEC);
