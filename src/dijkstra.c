@@ -7,7 +7,7 @@
 #include "parser_csv.h"
 #include "dijkstra.h"
 
-#define dmax 200
+#define dmax 250
 #define dmin 0
 #define ININITY 999999
 
@@ -96,6 +96,7 @@ int min_distance_index(int *distances, int *visited, int n){
     return index;
 }
 
+// returns the path from the depart to the arrivee (the path is in reverse order)
 int predecessorsToPath(int* predecessors, int* path, int arrivee){
     int j=1;
     path[0]=arrivee;
@@ -108,25 +109,30 @@ int predecessorsToPath(int* predecessors, int* path, int arrivee){
 }
 
 void displayPath(int* path, int length){
-    for(int k = length; k >= 1; k--){
-        printf("%d-->", path[k]);
+    printf("Path: [");
+    for(int i = 0; i < length-1; i++){
+        printf("%d, ", path[i]);
     }
-    printf("%d", path[0]);
+    printf("%d]\n", path[length]);
 }
 
+// keep only the stations that are at a distance of at most 'autonomy' from the previous station
 int decreaseNumberStations(station_t* stations ,int*path, int*newPath, int length, int autonomy){
     int c=0;
-    int currentStation = path[0];
+    int currentStation = path[length];
     int currentDistance = 0;
     newPath[c] = currentStation;
-    for(int i = 1; i < length; i++){
+    for(int i = length-1; i >= 0; i--){
         currentDistance += distance(&stations[currentStation], &stations[path[i]]);
         if(currentDistance > autonomy){
-            newPath[c++] = path[i-1];
-            currentStation = path[i-1];
+            c++;
+            newPath[c] = path[i+1];
+            currentStation = path[i+1];
             currentDistance = 0;
         }
     }
+    c++;
+    newPath[c] = path[0];
     return c;
 }
 
@@ -139,33 +145,28 @@ int main() {
     assert(parse_to_station(&reader, stations) == 0);
 
     int* predecessors = calloc(DATASET_STATIONS_LINES, sizeof(int));
+    int* path = malloc(sizeof(int) * DATASET_STATIONS_LINES);
+    int* newPath = malloc(sizeof(int) * DATASET_STATIONS_LINES);
    
     clock_t t=0;
     int distMin = dijkstra(stations[depart], stations[arrivee], stations, DATASET_STATIONS_LINES, predecessors);
     t = clock() - t;
 
-    printf("\nDistance min between station %d and station %d: %d km\n",depart, arrivee, distMin);
-    printf("Path: ");
+    printf("\nMinimum distance between station %d and %d: %d km\n",depart, arrivee, distMin);
 
-    int* path = malloc(sizeof(int) * DATASET_STATIONS_LINES);
     int length = predecessorsToPath(predecessors,path,arrivee);
 
+    // 'path' is the shortest path (in reverse order)
     displayPath(path, length);
+    
+    int newLength = decreaseNumberStations(stations, path, newPath, length, dmax);
 
-    printf("\nPath with less stations: ");
+    // 'newPath' is the path to display in order (with less stations)
+    displayPath(newPath, newLength);
 
-    int* newPath = malloc(sizeof(int) * DATASET_STATIONS_LINES);
-    int newLength = decreaseNumberStations(stations, path, newPath, length, 200);
-
-    for(int i = 0; i < newLength; i++){
-        printf("%d-->", newPath[i]);
-    }
-
-    free(newPath);
-
-    printf("\nDistance directe = %d km", distance(&stations[depart], &stations[arrivee]));
     printf("\nTime: %fs\n", ((double)t)/CLOCKS_PER_SEC);
 
+    free(newPath);
     free(path);
     free(predecessors);
     free_parsed_station(stations);

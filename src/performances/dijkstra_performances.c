@@ -20,7 +20,7 @@ int main(){
     station_t stations[DATASET_STATIONS_LINES];
     assert(parse_to_station(&reader, stations) == 0);
 
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 10; i++){
         int depart = rand() % DATASET_STATIONS_LINES;
         int arrivee = rand() % DATASET_STATIONS_LINES;
 
