@@ -5,8 +5,7 @@ CFLAGS+= `pkg-config --cflags gtk+-3.0`
 LDFLAGS+= -fsanitize=address
 LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
-
-ALL_EXECUTABLES=parser_csv_test calculate_distance_test interface_graphique search_button
+ALL_EXECUTABLES=parser_csv_test calculate_distance_test interface_graphique search_button dijkstra
 
 all: $(ALL_EXECUTABLES)
 
@@ -39,6 +38,12 @@ search_button.o : src/graphics/search_button.c src/station.c src/station.h
 
 search_button: src/graphics/search_button.o src/station.o src/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/$@
+
+dijkstra: src/dijkstra.o src/station.o src/parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/$@
+
+dijkstra.o: src/dijkstra.c src/station.c src/station.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 station.o : src/station.c src/station.h
 	
