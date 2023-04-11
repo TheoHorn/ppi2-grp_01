@@ -28,22 +28,23 @@ degree_of_station: src/performances/degree_of_station.o src/station.o src/parser
 degree_of_station.o: src/performances/degree_of_station.c src/station.c src/station.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-interface_graphique.o : src/interface_graphique.c src/station.c src/station.h
+interface_graphique.o : src/graphics/interface_graphique.c src/station.c src/station.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-interface_graphique: src/interface_graphique.o src/station.o src/parser_csv.o
+interface_graphique: src/graphics/interface_graphique.o src/station.o src/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/$@
 
-search_button.o : src/search_button.c src/station.c src/station.h
+search_button.o : src/graphics/search_button.c src/station.c src/station.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-search_button: src/search_button.o src/station.o src/parser_csv.o
+search_button: src/graphics/search_button.o src/station.o src/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/$@
 
 station.o : src/station.c src/station.h
 	
 clean:
-	rm -f *.o ${ALL_EXECUTABLES}
+	find . -name '*.o' -type f -delete
+	find . -name '$(ALL_EXECUTABLES)' -type f -delete
 
 .SILENT: clean test
 

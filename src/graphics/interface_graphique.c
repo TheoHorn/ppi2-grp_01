@@ -1,14 +1,14 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-#include "parser_csv.h"
+#include "../parser_csv.h"
 
 
 #define DRAWING_WIDTH 850
 #define DRAWING_HEIGHT 550
 
-int DEPART = -1;
-int ARRIVEE = -1;
+int DEPART = 1;
+int ARRIVEE = 2200;
 
 // Fonction de dessin
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
@@ -33,7 +33,7 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     int idArrivée = -1;
     // Dessiner les stations
     int radius;
-    for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
+    /for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
         if (stations[i].id == DEPART){
             idDepart = i;
         }else if(stations[i].id == ARRIVEE){
@@ -51,6 +51,8 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
             cairo_fill(cr);
         }
     }
+
+    //affichage départ
     if(idDepart != -1){
         //contour noir
         radius = 6;
@@ -64,7 +66,21 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
         cairo_arc(cr, stations[idDepart].longitude*3000 + 300, 2700 - stations[idDepart].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
     }
-    
+
+    //affichage chemin
+    /*if(stations[i].id == 2851 || stations[i].id == 6145 || stations[i].id == 9148 || stations[i].id == 14995 || stations[i].id == 10176 || stations[i].id == 9798 || stations[i].id == 7967 || stations[i].id == 14202 || stations[i].id == 10677){
+            radius = 6;
+            cairo_set_source_rgba(cr, 0, 0, 0,1);
+            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+            //remplissage bleu
+            radius = 5;
+            cairo_set_source_rgba(cr, 0, 0, 1,1);
+            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+        }*/
+
+    //affichage arrivée
     if (idArrivée != -1){
         //contour noir
         radius = 6;
@@ -72,12 +88,14 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
         cairo_arc(cr, stations[idArrivée].longitude*3000 + 300, 2700 - stations[idArrivée].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
 
-        //remplissage bleu
+        //remplissage jaune
         radius = 5;
         cairo_set_source_rgba(cr, 1, 1, 0,1);
         cairo_arc(cr, stations[idArrivée].longitude*3000 + 300, 2700 - stations[idArrivée].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
     }
+
+
     
     return TRUE;
 }
