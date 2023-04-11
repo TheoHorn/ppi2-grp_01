@@ -12,7 +12,13 @@ Gérald Oster <<gerald.oster@telecomnancy.eu>>
 
 # Utilisation
 
-## test de l'application
+## Installation de gtk pour l'interface graphique
+```shell
+#lance l'installation de gtk3.0
+ sudo apt-get install libgtk-3-dev
+```
+
+## Test de l'application
 ```shell
 # compile la partie parsing de csv en C et lance les tests
 make parser_csv
