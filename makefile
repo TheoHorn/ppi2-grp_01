@@ -45,9 +45,8 @@ dijkstra: src/dijkstra.o src/station.o src/parser_csv.o
 dijkstra.o: src/dijkstra.c src/station.c src/station.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-
 station.o : src/station.c src/station.h
-	
+	$(CC) $(CFLAGS) -c $< -o $@
 clean:
 	find . -name '*.o' -type f -delete
 	find . -name '$(ALL_EXECUTABLES)' -type f -delete

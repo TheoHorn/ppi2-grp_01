@@ -33,7 +33,7 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     int idArrivée = -1;
     // Dessiner les stations
     int radius;
-    /for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
+    for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
         if (stations[i].id == DEPART){
             idDepart = i;
         }else if(stations[i].id == ARRIVEE){

@@ -12,10 +12,17 @@ Gérald Oster <<gerald.oster@telecomnancy.eu>>
 
 # Utilisation
 
-## Installation de gtk pour l'interface graphique
+## Installation de gtk pour l'interface graphique 
+### Linux
 ```shell
-#lance l'installation de gtk3.0
- sudo apt-get install libgtk-3-dev
+sudo apt-get install libgtk-3-dev
+```
+### Windows
+[Installation GTK3 pour Windows](https://www.gtk.org/docs/installations/windows/)
+
+### MacOS
+```shell
+brew install gtk+3
 ```
 
 ## Test de l'application
