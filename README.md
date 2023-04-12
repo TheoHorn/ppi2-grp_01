@@ -12,9 +12,38 @@ Gérald Oster <<gerald.oster@telecomnancy.eu>>
 
 # Utilisation
 
-## test de l'application
+## Installation de gtk pour l'interface graphique 
+### Linux
+```shell
+sudo apt-get install libgtk-3-dev
+```
+### Windows
+[Installation GTK3 pour Windows](https://www.gtk.org/docs/installations/windows/)
+
+### MacOS
+```shell
+brew install gtk+3
+```
+
+## Test de l'application
 ```shell
 # compile la partie parsing de csv en C et lance les tests
 make parser_csv
 ./parser_csv
+
+# assure que la distance entre longitude et latitude est correcte
+make calculate_distance_test
+./calculate_distance_test
+
+# vérifie le fonctionnement de dijkstra 
+make dijkstra_test
+./dijkstra_test
+
+# mesure le temps pris pour effectuer des calculs de distances
+make time_distance_calcul_test
+./time_distance_calcul_test
+
+# calcul le degres d'une station
+make degree_of_station_test
+./degree_of_station_test
 ```

@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../station.h"
-#include "../parser_csv.h"
+#include "../../station.h"
+#include "../../utils/parser_csv.h"
 
 #define dmax 345
 #define dmin 0
@@ -12,7 +12,7 @@ int main(){
 
     // Creation file
     FILE *f;
-    f = fopen("./src/performances/degree_stations_data", "w");
+    f = fopen("./src/test/performances/degree_stations_data", "w");
     if(f == NULL)
    {
       printf("Error!");   

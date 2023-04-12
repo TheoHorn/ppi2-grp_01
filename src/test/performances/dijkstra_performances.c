@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../station.h"
-#include "../dijkstra.h"
-#include "../parser_csv.h"
+#include "../../station.h"
+#include "../../dijkstra.h"
+#include "../../utils/parser_csv.h"
 
 int main(){
     FILE *f;
-    f = fopen("./src/performances/perf_dijkstra", "w");
+    f = fopen("./src/test/performances/perf_dijkstra", "w");
     if(f == NULL)
    {
       printf("Error!");   

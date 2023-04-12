@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include <ctype.h>
-#include "../parser_csv.h"
+#include "../utils/parser_csv.h"
 #include "france_map.h"
 #include "search_button.h"
 
@@ -33,7 +33,9 @@ bool startsWith( const char * theString, const char * theBase ) {
 */
 void on_search_button_clicked(GtkButton *button, gpointer data)
 {
-    WidgetDataSB *widget_data_sb = (WidgetDataSB *) data;
+    if (button == NULL) return;
+
+    WidgetsData *widgets_data = (WidgetsData *) data;
     // Récupérer les différents widgets
     GtkEntry *search_entry = GTK_ENTRY(widget_data_sb->search_entry);
     GtkLabel *label1 = GTK_LABEL(widget_data_sb->label1);
