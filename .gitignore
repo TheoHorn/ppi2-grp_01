@@ -336,5 +336,7 @@ parser_csv_test
 car_t
 station
 calculate_distance_test
-interface_graphique
-search_button
+france_map_test
+search_button_test
+graphics
+dijkstra

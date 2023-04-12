@@ -2,23 +2,8 @@
 #include <string.h>
 #include <ctype.h>
 #include "../parser_csv.h"
-
-/**
- * @brief Structure contenant les widgets de l'interface graphique
-*/
-typedef struct {
-    GtkWidget *window;
-    GtkWidget *search_entry;
-    GtkWidget *search_button;
-    GtkWidget *grid;
-    GtkWidget *search_box;
-    GtkWidget *label1;
-    GtkWidget *label2;
-    GtkWidget *label3;
-    GtkWidget *label4;
-    GtkWidget *label5;
-    GtkWidget *box;
-} WidgetsData;
+#include "france_map.h"
+#include "search_button.h"
 
 
 /**
@@ -48,14 +33,14 @@ bool startsWith( const char * theString, const char * theBase ) {
 */
 void on_search_button_clicked(GtkButton *button, gpointer data)
 {
-    WidgetsData *widgets_data = (WidgetsData *) data;
+    WidgetDataSB *widget_data_sb = (WidgetDataSB *) data;
     // Récupérer les différents widgets
-    GtkEntry *search_entry = GTK_ENTRY(widgets_data->search_entry);
-    GtkLabel *label1 = GTK_LABEL(widgets_data->label1);
-    GtkLabel *label2 = GTK_LABEL(widgets_data->label2);
-    GtkLabel *label3 = GTK_LABEL(widgets_data->label3);
-    GtkLabel *label4 = GTK_LABEL(widgets_data->label4);
-    GtkLabel *label5 = GTK_LABEL(widgets_data->label5);
+    GtkEntry *search_entry = GTK_ENTRY(widget_data_sb->search_entry);
+    GtkLabel *label1 = GTK_LABEL(widget_data_sb->label1);
+    GtkLabel *label2 = GTK_LABEL(widget_data_sb->label2);
+    GtkLabel *label3 = GTK_LABEL(widget_data_sb->label3);
+    GtkLabel *label4 = GTK_LABEL(widget_data_sb->label4);
+    GtkLabel *label5 = GTK_LABEL(widget_data_sb->label5);
 
     // Récupérer le texte saisi dans le champ de saisie
     const char *search_text = gtk_entry_get_text(search_entry);
@@ -138,22 +123,12 @@ void on_search_button_clicked(GtkButton *button, gpointer data)
     }
 }
 
-int main(int argc, char *argv[])
-{
-    // Initialiser GTK+
-    gtk_init(&argc, &argv);
-
-    //Initialiser la structure WidgetsData
-    WidgetsData *widget_data = malloc(sizeof(WidgetsData));
-
-    // Créer une fenêtre, un champ de saisie de texte et un bouton
-    widget_data->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+void init_search_button(WidgetDataSB *widget_data){
     widget_data->search_entry  = gtk_entry_new();
     widget_data->search_button = gtk_button_new_with_label("Rechercher");
 
     // Création d'un GtkGrid pour ajouter les deux boxes
     widget_data->grid = gtk_grid_new();
-    gtk_container_add(GTK_CONTAINER(widget_data->window), widget_data->grid);
 
     // Créer une boîte horizontale pour les éléments de la barre de recherche
     widget_data->search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -183,10 +158,6 @@ int main(int argc, char *argv[])
 
     // Connecter la fonction de rappel au signal "clicked" du bouton "Rechercher"
     g_signal_connect(widget_data->search_button, "clicked", G_CALLBACK(on_search_button_clicked), widget_data);
+    
 
-    // Afficher la fenêtre et lancer la boucle d'événements GTK+
-    gtk_widget_show_all(widget_data->window);
-    gtk_main();
-
-    return 0;
 }
