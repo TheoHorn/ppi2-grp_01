@@ -29,7 +29,10 @@ dijkstra.o: src/dijkstra.c src/station.o
 search_button.o : src/graphics/search_button.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 
-interface_graphique.o : src/graphics/interface_graphique.c src/station.o
+france_map.o : src/graphics/france_map.c src/station.o
+	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
+
+graphics.o : src/graphics/graphics.c src/graphics/france_map.c src/graphics/france_map.h src/graphics/search_button.c src/graphics/search_button.h src/station.c src/station.h
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 #   -----------------
 
@@ -59,31 +62,16 @@ degree_of_station_test: src/test/performances/degree_of_station.c src/station.o 
 #  -----------------
 
 #  --- Graphics ---
-interface_graphique: src/graphics/interface_graphique.o src/station.o src/utils/parser_csv.o
+france_map: src/graphics/france_map.o src/station.o src/utils/parser_csv.o
 	$(MAKE) station.o parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-#search_button: src/graphics/search_button.o src/station.o src/utils/parser_csv.o
-#	$(MAKE) station.o parser_csv.o
-#	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
-
-#to be modified
-france_map.o : src/graphics/france_map.c src/graphics/france_map.h src/station.c src/station.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-france_map: src/graphics/france_map.o src/station.o src/parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/graphics/$@
-
-search_button.o : src/graphics/search_button.c src/graphics/search_button.h src/station.c src/station.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-search_button: src/graphics/search_button.o src/station.o src/parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/graphics/$@
-
-graphics.o : src/graphics/graphics.c src/graphics/france_map.c src/graphics/france_map.h src/graphics/search_button.c src/graphics/search_button.h src/station.c src/station.h
-	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
+search_button: src/graphics/search_button.o src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 graphics: src/graphics/graphics.o src/graphics/search_button.o src/graphics/france_map.o src/station.o src/parser_csv.o
+	$(MAKE) station.o parser_csv.o france_map.o search_button.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 
