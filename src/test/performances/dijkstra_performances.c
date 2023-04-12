@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../station.h"
-#include "../dijkstra.h"
-#include "../parser_csv.h"
+#include "../../station.h"
+#include "../../dijkstra.h"
+#include "../../utils/parser_csv.h"
 
 int main(){
     FILE *f;

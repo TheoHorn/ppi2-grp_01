@@ -1,8 +1,8 @@
 #ifndef PARSER_CSV_H
 #define PARSER_CSV_H
 
-#include "car.h"
-#include "station.h"
+#include "../car.h"
+#include "../station.h"
 
 #define DATASET_PATH_CARS "dataset/cars.csv"
 #define DATASET_CARS_LINES 299

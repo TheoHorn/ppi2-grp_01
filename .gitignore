@@ -338,3 +338,6 @@ station
 calculate_distance_test
 interface_graphique
 search_button
+station.o
+parser_csv.o
+dijkstra

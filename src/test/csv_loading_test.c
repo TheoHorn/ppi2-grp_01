@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "../parser_csv.c"
+#include "../utils/parser_csv.c"
 #include "utils.c"
 
 void parsing_cars_test() {

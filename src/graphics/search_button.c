@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include <ctype.h>
-#include "../parser_csv.h"
+#include "../utils/parser_csv.h"
 
 /**
  * @brief Structure contenant les widgets de l'interface graphique

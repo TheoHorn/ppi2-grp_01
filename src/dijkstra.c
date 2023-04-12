@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "station.h"
-#include "parser_csv.h"
+#include "utils/parser_csv.h"
 #include "dijkstra.h"
 
 #define dmax 250
