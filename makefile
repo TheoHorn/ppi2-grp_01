@@ -19,7 +19,6 @@ parser_csv.o: src/utils/parser_csv.c src/utils/parser_csv.h
 
 station.o : src/station.c src/station.h
 	$(CC) $(CFLAGS) -c $< -o src/$@
->>>>>>> 12d4a3fd66bb08bfdf283c90dc53e26f1e089fd5
 
 car.o : src/car.c src/car.h
 	$(CC) $(CFLAGS) -c $< -o src/$@
