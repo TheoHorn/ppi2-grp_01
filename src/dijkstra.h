@@ -25,4 +25,8 @@ int predecessorsToPath(int* predecessors, int* path, int arrivee);
 // display the path
 void displayPath(int* path, int length);
 
+// keep only the stations that are at a distance of at most 'autonomy' from the previous station
+int decreaseNumberStations(station_t* stations ,int*path, int*newPath, int length, int autonomy);
+
+
 #endif

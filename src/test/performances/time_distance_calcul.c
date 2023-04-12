@@ -9,10 +9,10 @@ int main(){
 
     // Creation file
     FILE *f;
-    f = fopen("./src/performances/perf_time_dist", "w");
+    f = fopen("./src/test/performances/perf_time_dist", "w");
     if(f == NULL)
    {
-      printf("Error!");   
+      printf("Error!\n");
       exit(1);             
    }
 
@@ -28,8 +28,9 @@ int main(){
             for(int j = 0; j < n; j++){
                 if(j != i)
                     distance(&stations[i], &stations[j]);
-            } 
+            }
         }
+        printf("Progression en cours\n");
         clock_t end = clock(); // end time
         double time_spent = (double)(end - start) / CLOCKS_PER_SEC; // time spent
         

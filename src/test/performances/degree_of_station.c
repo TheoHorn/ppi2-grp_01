@@ -12,7 +12,7 @@ int main(){
 
     // Creation file
     FILE *f;
-    f = fopen("./src/performances/degree_stations_data", "w");
+    f = fopen("./src/test/performances/degree_stations_data", "w");
     if(f == NULL)
    {
       printf("Error!");   

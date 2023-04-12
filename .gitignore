@@ -340,4 +340,8 @@ interface_graphique
 search_button
 station.o
 parser_csv.o
-dijkstra
+dijkstra_test
+degree_of_station_test
+time_distance_calcul_test
+src/test/performances/perf_time_dist
+src/test/performances/degree_stations_data

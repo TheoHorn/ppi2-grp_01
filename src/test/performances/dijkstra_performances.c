@@ -8,7 +8,7 @@
 
 int main(){
     FILE *f;
-    f = fopen("./src/performances/perf_dijkstra", "w");
+    f = fopen("./src/test/performances/perf_dijkstra", "w");
     if(f == NULL)
    {
       printf("Error!");   

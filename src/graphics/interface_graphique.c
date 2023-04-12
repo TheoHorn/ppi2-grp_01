@@ -12,7 +12,7 @@ int ARRIVEE = 2200;
 
 // Fonction de dessin
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
-    
+    if (widget == NULL || data == NULL) {}
     // Récupérer les données
     csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
     station_t stations[DATASET_STATIONS_LINES];
@@ -101,6 +101,7 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
 }
 
 void on_button_clicked_dep(GtkWidget *button, gpointer data) {
+    if (button == NULL) {}
     // Récupérer la valeur sélectionnée dans la liste déroulante
     GtkComboBox *combo_box = GTK_COMBO_BOX(data);
     gint active = gtk_combo_box_get_active(combo_box);
@@ -121,6 +122,7 @@ void on_button_clicked_dep(GtkWidget *button, gpointer data) {
 }
 
 void on_button_clicked_arr(GtkWidget *button, gpointer data) {
+    if (button == NULL) {}
     // Récupérer la valeur sélectionnée dans la liste déroulante
     GtkComboBox *combo_bx = GTK_COMBO_BOX(data);
     gint active = gtk_combo_box_get_active(combo_bx);

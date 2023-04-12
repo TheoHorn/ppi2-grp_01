@@ -48,6 +48,8 @@ bool startsWith( const char * theString, const char * theBase ) {
 */
 void on_search_button_clicked(GtkButton *button, gpointer data)
 {
+    if (button == NULL) return;
+
     WidgetsData *widgets_data = (WidgetsData *) data;
     // Récupérer les différents widgets
     GtkEntry *search_entry = GTK_ENTRY(widgets_data->search_entry);

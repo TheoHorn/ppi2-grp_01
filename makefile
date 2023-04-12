@@ -5,33 +5,28 @@ CFLAGS+= `pkg-config --cflags gtk+-3.0`
 LDFLAGS+= -fsanitize=address
 LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
-ALL_EXECUTABLES=
-ALL_O=parser_csv.o station.o time_distance_calcul.o dijkstra.o search_button.o degree_of_station.o interface_graphique.o
+ALL_EXECUTABLES=parser_csv_test calculate_distance_test time_distance_calcul_test degree_of_station_test interface_graphique search_button dijkstra_test
+ALL_O=parser_csv.o station.o car.o dijkstra.o search_button.o interface_graphique.o
 
-all: create_o $(ALL_EXECUTABLES)
-create_o:
-	$(ALL_O)
-	@echo "Tout les fichiers .o ont été créés"
+all: $(ALL_EXECUTABLES)
+
+create_o: $(ALL_O)
 
 # --- .o ---
 parser_csv.o: src/utils/parser_csv.c src/utils/parser_csv.h
-	${CC} ${CFLAGS} -c $< -o src/utils/$@
+	${CC} $(CFLAGS) -c $< -o src/utils/$@
 
 station.o : src/station.c src/station.h
 	$(CC) $(CFLAGS) -c $< -o src/$@
 
-time_distance_calcul.o: src/test/performances src/station.o
-
-	$(CC) $(CFLAGS) -c $< -o src/test/$@
+car.o : src/car.c src/car.h
+	$(CC) $(CFLAGS) -c $< -o src/$@
 
 dijkstra.o: src/dijkstra.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/$@
 
 search_button.o : src/graphics/search_button.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
-
-degree_of_station.o: src/test/performances src/station.o
-	$(CC) $(CFLAGS) -c $< -o src/test/performances$@
 
 interface_graphique.o : src/graphics/interface_graphique.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
@@ -41,37 +36,47 @@ interface_graphique.o : src/graphics/interface_graphique.c src/station.o
 
 # --- Tests ---
 parser_csv_test: $(parser_csv.o) src/test/csv_loading_test.c src/utils/parser_csv.o
-	${CC} ${CFLAGS} -o $@ $<
+	$(MAKE) parser_csv.o
+	${CC} $(CFLAGS) -o $@ $<
 
 calculate_distance_test:  src/test/calculate_distance.c src/station.o
-	${CC} ${CFLAGS} -o $@ $<
+	$(MAKE) station.o
+	${CC} $(CFLAGS) -o $@ $<
 
-#  -----------------
+dijkstra_test: src/test/dijkstra_test.c src/dijkstra.o src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o dijkstra.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
 #  --- Performances tests ---
-time_distance_calcul: src/test/performances src/station.o src/parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/performances/$@
+
+time_distance_calcul_test: src/test/performances/time_distance_calcul.c src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+degree_of_station_test: src/test/performances/degree_of_station.c src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 #  -----------------
 
+#  --- Graphics ---
+interface_graphique: src/graphics/interface_graphique.o src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-degree_of_station: src/test/performances src/station.o src/parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/performances/$@
+search_button: src/graphics/search_button.o src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+#   -------
 
-interface_graphique: src/graphics/interface_graphique.o src/station.o src/parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/$@
-
-
-search_button: src/graphics/search_button.o src/station.o src/parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/$@
-
-dijkstra: src/dijkstra.o src/station.o src/parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o src/$@
 
 
 
 clean:
 	find . -name '*.o' -type f -delete
+	@echo "Tout les fichiers .o ont été supprimés"
 	find . -name '$(ALL_EXECUTABLES)' -type f -delete
+	@echo "Tout les fichiers exécutables ont été supprimés"
 
 .SILENT: clean test
 
