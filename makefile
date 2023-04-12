@@ -32,7 +32,7 @@ search_button.o : src/graphics/search_button.c src/station.o
 france_map.o : src/graphics/france_map.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 
-graphics.o : src/graphics/graphics.c src/graphics/france_map.c src/graphics/france_map.h src/graphics/search_button.c src/graphics/search_button.h src/station.c src/station.h
+graphics.o : src/graphics/graphics.c src/graphics/france_map.o src/graphics/search_button.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 #   -----------------
 
@@ -70,16 +70,16 @@ search_button: src/graphics/search_button.o src/station.o src/utils/parser_csv.o
 	$(MAKE) station.o parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-graphics: src/graphics/graphics.o src/graphics/search_button.o src/graphics/france_map.o src/station.o src/parser_csv.o
+graphics: src/graphics/graphics.o src/graphics/search_button.o src/graphics/france_map.o src/station.o src/utils/parser_csv.o
 	$(MAKE) station.o parser_csv.o france_map.o search_button.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 
 #  --- Graphics Tests ---
-search_button_test: src/test/search_button_test.c src/graphics/search_button.o src/station.o src/parser_csv.o
+search_button_test: src/test/search_button_test.c src/graphics/search_button.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-france_map_test: src/test/france_map_test.c src/graphics/france_map.o src/station.o src/parser_csv.o
+france_map_test: src/test/france_map_test.c src/graphics/france_map.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 #   -------
 

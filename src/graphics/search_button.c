@@ -35,7 +35,7 @@ void on_search_button_clicked(GtkButton *button, gpointer data)
 {
     if (button == NULL) return;
 
-    WidgetsData *widgets_data = (WidgetsData *) data;
+    WidgetDataSB *widget_data_sb = (WidgetDataSB *) data;
     // Récupérer les différents widgets
     GtkEntry *search_entry = GTK_ENTRY(widget_data_sb->search_entry);
     GtkLabel *label1 = GTK_LABEL(widget_data_sb->label1);

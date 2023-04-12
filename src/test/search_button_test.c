@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include <ctype.h>
-#include "../parser_csv.h"
+#include "../utils/parser_csv.h"
 #include "../graphics/france_map.h"
 #include "../graphics/search_button.h"
 
