@@ -70,12 +70,10 @@ search_button: src/graphics/search_button.o src/station.o src/utils/parser_csv.o
 #   -------
 
 
-
-
 clean:
 	find . -name '*.o' -type f -delete
 	@echo "Tout les fichiers .o ont été supprimés"
-	find . -name '$(ALL_EXECUTABLES)' -type f -delete
+	rm -f $(ALL_EXECUTABLES)
 	@echo "Tout les fichiers exécutables ont été supprimés"
 
 .SILENT: clean test
