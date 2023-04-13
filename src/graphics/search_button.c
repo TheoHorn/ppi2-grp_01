@@ -23,7 +23,19 @@ bool startsWith( const char * theString, const char * theBase ) {
     for (int i = 0; base[i] != '\0'; i++) {
         base[i] = tolower(base[i]);
     }
-    return strncmp( str, base, strlen( base ) ) == 0;
+    bool retour = strncmp( str, base, strlen( base ) ) == 0;
+    free(str);
+    free(base);
+    return retour;
+}
+
+WidgetLabel* init_label()
+{
+    WidgetLabel *widget_label = malloc(sizeof(WidgetLabel));
+    widget_label->event_box = gtk_event_box_new();
+    widget_label->label = gtk_label_new("");
+    gtk_container_add(GTK_CONTAINER(widget_label->event_box), widget_label->label);
+    return widget_label;
 }
 
 /**
@@ -38,11 +50,11 @@ void on_search_button_clicked(GtkButton *button, gpointer data)
     WidgetDataSB *widget_data_sb = (WidgetDataSB *) data;
     // Récupérer les différents widgets
     GtkEntry *search_entry = GTK_ENTRY(widget_data_sb->search_entry);
-    GtkLabel *label1 = GTK_LABEL(widget_data_sb->label1);
-    GtkLabel *label2 = GTK_LABEL(widget_data_sb->label2);
-    GtkLabel *label3 = GTK_LABEL(widget_data_sb->label3);
-    GtkLabel *label4 = GTK_LABEL(widget_data_sb->label4);
-    GtkLabel *label5 = GTK_LABEL(widget_data_sb->label5);
+    GtkLabel *label1 = GTK_LABEL(widget_data_sb->label1->label);
+    GtkLabel *label2 = GTK_LABEL(widget_data_sb->label2->label);
+    GtkLabel *label3 = GTK_LABEL(widget_data_sb->label3->label);
+    GtkLabel *label4 = GTK_LABEL(widget_data_sb->label4->label);
+    GtkLabel *label5 = GTK_LABEL(widget_data_sb->label5->label);
 
     // Récupérer le texte saisi dans le champ de saisie
     const char *search_text = gtk_entry_get_text(search_entry);
@@ -123,6 +135,14 @@ void on_search_button_clicked(GtkButton *button, gpointer data)
         gtk_label_set_text(label5, txt5);
         break;
     }
+    free_parsed_station(stations);
+}
+
+void on_label_clicked(GtkWidget *widget, gpointer data) {
+ 
+  GtkWidget *child = gtk_bin_get_child (GTK_BIN(widget));
+  GtkWidget *label = GTK_LABEL (child);
+  g_print("%s\n", gtk_label_get_text(label));
 }
 
 void init_search_button(WidgetDataSB *widget_data){
@@ -137,29 +157,34 @@ void init_search_button(WidgetDataSB *widget_data){
     gtk_box_pack_start(GTK_BOX(widget_data->search_box), widget_data->search_entry, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(widget_data->search_box), widget_data->search_button, FALSE, FALSE, 0);
 
-
     // Création des labels
-    widget_data->label1 = gtk_label_new("");
-    widget_data->label2 = gtk_label_new("");
-    widget_data->label3 = gtk_label_new("");
-    widget_data->label4 = gtk_label_new("");
-    widget_data->label5 = gtk_label_new("");
+    widget_data->label1 = init_label();
+    widget_data->label2 = init_label(); 
+    widget_data->label3 = init_label();
+    widget_data->label4 = init_label();
+    widget_data->label5 = init_label();   
 
     // Création d'un conteneur vertical pour les labels
     widget_data->box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_set_border_width(GTK_CONTAINER(widget_data->box), 10);
-    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label1, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label2, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label3, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label4, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label5, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label1->event_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label2->event_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label3->event_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label4->event_box, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(widget_data->box), widget_data->label5->event_box, FALSE, FALSE, 0);
 
     gtk_grid_attach(GTK_GRID(widget_data->grid), widget_data->box, 0, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(widget_data->grid), widget_data->search_box, 0, 0, 1, 1);
     
 
-    // Connecter la fonction de rappel au signal "clicked" du bouton "Rechercher"
+    // Connecter les signaux
     g_signal_connect(widget_data->search_button, "clicked", G_CALLBACK(on_search_button_clicked), widget_data);
+    g_signal_connect(widget_data->label1->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
+    g_signal_connect(widget_data->label2->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
+    g_signal_connect(widget_data->label3->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
+    g_signal_connect(widget_data->label4->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
+    g_signal_connect(widget_data->label5->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
+    
     
 
 }
