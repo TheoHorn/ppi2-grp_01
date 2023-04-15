@@ -1,6 +1,6 @@
 #include "astar.h"
 #include <stdlib.h>
-
+#include <stdio.h>
 
 station_t** path_generation(station_t stations[], station_t *starting_station, station_t *last_station, int nbstations){
     station_node_queue *closedList = create_queue(); 
@@ -8,19 +8,19 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
     station_node *starting_node = create_station_node(starting_station, 0, 0);
     add_to_queue(openList, starting_node);
     while(!queue_is_empty(openList)){
-        station_node *node = unqueue(openList);
-        if(node->station->id == last_station->id){
+        station_node *node = unqueue(&openList);
+        if(node->station->id == last_station->id){  // TODO detecter avant
             free_queue(openList);
+            station_t **path = reconstruct_path(node);
+            free(node);
             free_queue(closedList);
-            free(node); // TODO remove when return reconstruct path
-            return NULL;
-            //return reconstruct_path(node);  // End calcul here
+            return path;
         }
         else{
-            station_node **neighbours = adjacentStations(stations, node, nbstations, 200);
+            station_node **neighbours = adjacentStations(stations, node, nbstations, last_station, 250, 0);
             int i = 0;
 
-            while(neighbours[i]->station != NULL){ // foreach n in neighbours
+            while(neighbours[i]->station != NULL){
                 station_node *n = neighbours[i];
 
                 if(!is_in_queue(closedList, n->station) && !is_in_queue_with_lower_cost(openList, n)){
@@ -45,13 +45,14 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
 } 
 
 
-station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, double distMax){
+station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, station_t *last_station, double distMax, double distMin){
     station_node **neighbours = malloc(sizeof(station_node) * nbStations);
     int nbNeighbours = 0;
     for(int i = 0; i < nbStations; i++){
         double dist = distance(node->station, &stations[i]);
-        if(dist <= distMax){
+        if((dist >= distMin || last_station->id == stations[i].id) && dist <= distMax){
             neighbours[nbNeighbours] = create_station_node(&stations[i], node->cost + dist, 0);
+            neighbours[nbNeighbours]->parent = (struct station_node_t*) node;
             nbNeighbours++;
         }
     }
@@ -66,12 +67,33 @@ double calculate_heuristic(station_node *node, station_t *goal) {
 
 
 station_t** reconstruct_path(station_node *node){
-    station_t **path = malloc(sizeof(station_t) * 20);
-    int i = 0;
-    while(node != NULL){
-        path[i] = node->station;
+    int nbStations = 0;
+    station_node *current = node;
+    while(current->parent != NULL){
+        nbStations++;
+        current = current->parent;
+    }
+    station_t **path = malloc(sizeof(station_t*) * (nbStations + 1));
+    current = node;
+    for(int i = nbStations; i >= 1; i--){
+        path[i] = current->station;
+        current = current->parent;
+    }
+    path[0] = current->station;
+    return path;
+}
 
+int path_size(station_t **path, station_t last_station){
+    int i = 0;
+    while(path[i]->id != last_station.id){
         i++;
     }
-    return path;
+    return i + 1;
+}
+
+void print_path(station_t **path, int nbstations){
+    for(int i = 0; i < nbstations - 1; i++){
+        printf("%d -(%dkm)-> ", path[i]->id, (int)distance(path[i], path[i+1]));
+    }
+    printf("%d\n", path[nbstations - 1]->id);
 }

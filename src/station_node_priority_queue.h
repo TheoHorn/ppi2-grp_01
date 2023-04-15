@@ -1,9 +1,10 @@
 #include "station.h"
 
-typedef struct{
+typedef struct station_node_t {
     station_t *station;
     double heuristic;
     double cost;
+    struct station_node_t *parent;
 } station_node;
 
 
@@ -23,7 +24,7 @@ station_node_queue* create_queue();
 station_node_queue* add_to_queue(station_node_queue *root, station_node *value);
 
 
-station_node* unqueue(station_node_queue *root);
+station_node* unqueue(station_node_queue **root);
 
 
 bool is_in_queue(station_node_queue *root, station_t *station);

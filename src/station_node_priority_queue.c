@@ -19,7 +19,7 @@ station_node_queue* add_to_queue(station_node_queue *root, station_node *value){
         return root;
     }
     else{
-        if(value->heuristic < root->value->heuristic){
+        if(value->heuristic <= root->value->heuristic){
             root->left = add_to_queue(root->left, value);
         }
         else{
@@ -30,14 +30,23 @@ station_node_queue* add_to_queue(station_node_queue *root, station_node *value){
 }
 
 
-station_node* unqueue(station_node_queue *root){
-    if(root->left == NULL){
-        station_node *value = root->value;
-        root->value = NULL;
+station_node* unqueue(station_node_queue **root){
+    if(*root == NULL || (*root)->value == NULL){
+        return NULL;
+    }
+    else if((*root)->left == NULL){
+        station_node *value = (*root)->value;
+        (*root)->value = NULL;
         return value;
     }
     else{
-        return unqueue(root->left);
+        station_node *value = unqueue(&(*root)->left);
+        if((*root)->left->value == NULL){
+            station_node_queue *tmp = (*root)->left;
+            (*root)->left = (*root)->left->right;
+            free(tmp);
+        }
+        return value;
     }
 }
 
@@ -73,6 +82,7 @@ bool is_in_queue_with_lower_cost(station_node_queue *root, station_node *station
             return true;
         else return is_in_queue_with_lower_cost(root->right, station);
     }
+    return false;
 }
 
 
@@ -81,6 +91,7 @@ station_node* create_station_node(station_t *station, double cost, double heuris
     node->station = station;
     node->cost = cost;
     node->heuristic = heuristic;
+    node->parent = NULL;
     return node;
 }
 

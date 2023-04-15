@@ -7,4 +7,8 @@ station_t** reconstruct_path(station_node *node);
 
 double calculate_heuristic(station_node *node, station_t *goal);
 
-station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, double distMax);
+station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, station_t *last_station, double distMax, double distMin);
+
+int path_size(station_t **path, station_t last_station);
+
+void print_path(station_t **path, int nbstations);

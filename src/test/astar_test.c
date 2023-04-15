@@ -3,6 +3,7 @@
 #include <time.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int main()
 {
@@ -16,6 +17,11 @@ int main()
     clock_t t=0;
     station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], DATASET_STATIONS_LINES);
     t = clock() - t;
+
+    print_path(path, path_size(path, stations[arrivee]));
+
+    free(path);
+
 
     printf("Temps d'execution : %f secondes\n", ((float)t)/CLOCKS_PER_SEC);
 
