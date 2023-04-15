@@ -6,8 +6,8 @@ LDFLAGS+= -fsanitize=address
 LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
 
-ALL_EXECUTABLES=parser_csv_test calculate_distance_test time_distance_calcul_test degree_of_station_test interface_graphique search_button dijkstra_test france_map search_button_test dijkstra graphics
-ALL_O=parser_csv.o station.o car.o dijkstra.o search_button.o interface_graphique.o
+ALL_EXECUTABLES=parser_csv_test calculate_distance_test time_distance_calcul_test degree_of_station_test interface_graphique search_button dijkstra_test france_map search_button_test dijkstra graphics astar_test
+ALL_O=parser_csv.o station.o car.o dijkstra.o search_button.o interface_graphique.o astar.o
 
 all: $(ALL_EXECUTABLES)
 
@@ -34,6 +34,12 @@ france_map.o : src/graphics/france_map.c src/station.o
 
 graphics.o : src/graphics/graphics.c src/graphics/france_map.o src/graphics/search_button.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
+
+astar.o : src/astar.c src/station_node_priority_queue.o
+	$(CC) $(CFLAGS) -c $< -o src/$@
+
+station_node_priority_queue.o : src/station_node_priority_queue.c src/station.o
+	$(CC) $(CFLAGS) -c $< -o src/$@
 #   -----------------
 
 # --- Tests ---
@@ -47,6 +53,10 @@ calculate_distance_test:  src/test/calculate_distance.c src/station.o
 
 dijkstra_test: src/test/dijkstra_test.c src/dijkstra.o src/station.o src/utils/parser_csv.o
 	$(MAKE) station.o parser_csv.o dijkstra.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+astar_test: src/test/astar_test.c src/astar.o src/station.o src/utils/parser_csv.o src/station_node_priority_queue.o
+	$(MAKE) station.o parser_csv.o astar.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 #  --- Performances tests ---
