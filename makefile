@@ -6,8 +6,8 @@ LDFLAGS+= -fsanitize=address
 LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
 
-ALL_EXECUTABLES=parser_csv_test calculate_distance_test time_distance_calcul_test degree_of_station_test interface_graphique search_button dijkstra_test france_map search_button_test dijkstra graphics
-ALL_O=parser_csv.o station.o car.o dijkstra.o search_button.o interface_graphique.o
+ALL_EXECUTABLES=parser_csv_test calculate_distance_test dijkstra_test time_distance_calcul_test degree_of_station_test france_map search_button graphics search_button_test france_map_test
+ALL_O= parser_csv.o station.o car.o dijkstra.o search_button.o france_map.o graphics.o
 
 all: $(ALL_EXECUTABLES)
 
