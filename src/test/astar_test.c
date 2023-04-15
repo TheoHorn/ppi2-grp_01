@@ -18,8 +18,7 @@ int main()
     t = clock() - t;
 
     printf("Temps d'execution : %f secondes\n", ((float)t)/CLOCKS_PER_SEC);
-    
+
     free_parsed_station(stations);
-    
     return 0;
 }

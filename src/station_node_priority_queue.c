@@ -91,5 +91,6 @@ void free_queue(station_node_queue *root){
     if(root->right != NULL){
         free_queue(root->right);
     }
+    free(root->value);
     free(root);
 }

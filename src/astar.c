@@ -10,9 +10,9 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
     while(!queue_is_empty(openList)){
         station_node *node = unqueue(openList);
         if(node->station->id == last_station->id){
-            free(starting_node);
             free_queue(openList);
             free_queue(closedList);
+            free(node); // TODO remove when return reconstruct path
             return NULL;
             //return reconstruct_path(node);  // End calcul here
         }
@@ -31,14 +31,14 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
                     free(n);
                 }
                 i++;
-            } 
+            }
+
             free(neighbours[i]);
             free(neighbours);
 
             add_to_queue(closedList, node);
         }
     }
-    free(starting_node);
     free_queue(openList);
     free_queue(closedList);
     return NULL; // Error here, no path found
