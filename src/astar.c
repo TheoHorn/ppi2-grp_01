@@ -9,7 +9,7 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
     add_to_queue(openList, starting_node);
     while(!queue_is_empty(openList)){
         station_node *node = unqueue(&openList);
-        if(node->station->id == last_station->id){  // TODO detecter avant
+        if(node->station->id == last_station->id){ 
             free_queue(openList);
             station_t **path = reconstruct_path(node);
             free(node);
@@ -48,12 +48,21 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
 station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, station_t *last_station, double distMax, double distMin){
     station_node **neighbours = malloc(sizeof(station_node) * nbStations);
     int nbNeighbours = 0;
-    for(int i = 0; i < nbStations; i++){
-        double dist = distance(node->station, &stations[i]);
-        if((dist >= distMin || last_station->id == stations[i].id) && dist <= distMax){
-            neighbours[nbNeighbours] = create_station_node(&stations[i], node->cost + dist, 0);
-            neighbours[nbNeighbours]->parent = (struct station_node_t*) node;
-            nbNeighbours++;
+
+    // If the last station is in range, we skip the others
+    if(distance(node->station, last_station) <= distMax){
+        nbNeighbours = 1;
+        neighbours[0] = create_station_node(last_station, node->cost + distance(node->station, last_station), 0);
+        neighbours[0]->parent = (struct station_node_t*) node;
+    }
+    else{
+        for(int i = 0; i < nbStations; i++){
+            double dist = distance(node->station, &stations[i]);
+            if(dist >= distMin && dist <= distMax){
+                neighbours[nbNeighbours] = create_station_node(&stations[i], node->cost + dist, 0);
+                neighbours[nbNeighbours]->parent = (struct station_node_t*) node;
+                nbNeighbours++;
+            }
         }
     }
     neighbours[nbNeighbours] = create_station_node(NULL, 0, 0);
