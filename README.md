@@ -25,6 +25,12 @@ sudo apt-get install libgtk-3-dev
 brew install gtk+3
 ```
 
+## Lancement du programme
+```shell
+make program
+./program
+``` 
+
 ## Test de l'application
 ```shell
 # compile la partie parsing de csv en C et lance les tests

@@ -13,6 +13,12 @@ all: $(ALL_EXECUTABLES)
 
 create_o: $(ALL_O)
 
+# ---- Lancement du programm ----
+program: src/main.c
+	$(MAKE) needed.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+# -----------
+
 # --- .o ---
 parser_csv.o: src/utils/parser_csv.c src/utils/parser_csv.h
 	${CC} $(CFLAGS) -c $< -o src/utils/$@
