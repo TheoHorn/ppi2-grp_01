@@ -91,6 +91,7 @@ station_node* create_station_node(station_t *station, double cost, double heuris
     node->station = station;
     node->cost = cost;
     node->heuristic = heuristic;
+    node->battery_after_charge = 0;
     node->parent = NULL;
     return node;
 }

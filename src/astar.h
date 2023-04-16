@@ -1,7 +1,7 @@
 #include "station_node_priority_queue.h"
+#include "car.h"
 
-
-station_t** path_generation(station_t stations[], station_t *starting_station, station_t *last_station, int nbstations);
+station_t** path_generation(station_t stations[], station_t *starting_station, station_t *last_station, int nbstations, car_t *car);
 
 station_t** reconstruct_path(station_node *node);
 

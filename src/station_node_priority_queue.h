@@ -4,6 +4,7 @@ typedef struct station_node_t {
     station_t *station;
     double heuristic;
     double cost;
+    double battery_after_charge;
     struct station_node_t *parent;
 } station_node;
 
