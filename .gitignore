@@ -347,3 +347,5 @@ time_distance_calcul_test
 src/test/performances/perf_time_dist
 src/test/performances/degree_stations_data
 astar_test
+option_display_test
+graphics_test

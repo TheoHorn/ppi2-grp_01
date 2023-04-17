@@ -1,7 +1,6 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
-#include "../parser_csv.h"
 #include "../graphics/france_map.h"
 
 int main(int argc, char *argv[]) {
@@ -20,7 +19,7 @@ int main(int argc, char *argv[]) {
     // Afficher la fenêtre
     gtk_container_add(GTK_CONTAINER(widget_data->window), widget_data->box);
     gtk_widget_show_all(widget_data->window);
-    g_signal_connect(widget_data->window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(widget_data->window, "delete-event", G_CALLBACK(france_map_quit), widget_data);
 
     // Démarrer la boucle principale GTK
     gtk_main();

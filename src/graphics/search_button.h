@@ -75,5 +75,11 @@ void init_search_button(WidgetDataSB *widget_data);
 */
 WidgetLabel* init_label();
 
+/**
+ * @brief Fonction qui free pour éviter une fuite mémoire
+ * lors de la fermeture de la windows
+ */
+void search_button_quit(GtkWidget *window, int *data);
+
 #endif 
 

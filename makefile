@@ -70,24 +70,6 @@ degree_of_station_test: src/test/performances/degree_of_station.c src/station.o 
 
 #  -----------------
 
-#  --- Graphics ---
-france_map: src/graphics/france_map.o src/station.o src/utils/parser_csv.o
-	$(MAKE) station.o parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
-
-search_button: src/graphics/search_button.o src/station.o src/utils/parser_csv.o
-	$(MAKE) station.o parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
-
-option_display: src/graphics/option_display.o src/station.o src/utils/parser_csv.o
-	$(MAKE) station.o parser_csv.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
-
-graphics: src/graphics/graphics.o src/station.o src/utils/parser_csv.o 
-	$(MAKE) station.o parser_csv.o 
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
-
-
 #  --- Graphics Tests ---
 search_button_test: src/test/search_button_test.c src/graphics/search_button.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
@@ -96,6 +78,10 @@ france_map_test: src/test/france_map_test.c src/graphics/france_map.o src/statio
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 option_display_test: src/test/option_display_test.c src/graphics/option_display.o src/station.o src/utils/parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 #   -------

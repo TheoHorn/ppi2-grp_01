@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include "../utils/parser_csv.h"
 #include "france_map.h"
@@ -180,4 +181,17 @@ void init_search_button(WidgetDataSB *widget_data){
     g_signal_connect(wd->window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
     */
 
+}
+
+void search_button_quit(GtkWidget *window, int *data) {
+    if (window == NULL) {}
+    WidgetDataSB *widget_data_sb = (WidgetDataSB *) data;
+    free(widget_data_sb->label1);
+    free(widget_data_sb->label2);
+    free(widget_data_sb->label3);
+    free(widget_data_sb->label4);
+    free(widget_data_sb->label5);
+
+
+    gtk_main_quit();
 }

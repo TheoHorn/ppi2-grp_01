@@ -5,6 +5,8 @@
 #include "france_map.h"
 
 
+#include "stdlib.h"
+
 
 
 /**
@@ -96,6 +98,8 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
         cairo_arc(cr, stations[idArrivée].longitude*3000 + 300, 2700 - stations[idArrivée].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
     }
+
+    free_parsed_station(stations);
     return TRUE;
 }
 /*
@@ -142,3 +146,12 @@ void init_france_map(WidgetDataFM *widget_data){
     widget_data->borne_arrivee = "--";    
 }
 
+
+void france_map_quit(GtkWidget *window, int *data) {
+    if (window == NULL) {}
+    WidgetDataFM *widget_data = (WidgetDataFM *) data;
+    free(widget_data->borne_depart);
+    free(widget_data->borne_arrivee);
+
+    gtk_main_quit();
+}

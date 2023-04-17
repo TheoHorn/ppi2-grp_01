@@ -42,6 +42,12 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data);
 */
 void init_france_map(WidgetDataFM *widget_data);
 
+/**
+ * @brief Fonction qui free pour éviter une fuite mémoire
+ * lors de la fermeture de la windows
+ */
+void france_map_quit(GtkWidget *window, int *data);
+
 #define DRAWING_WIDTH 850
 #define DRAWING_HEIGHT 550
 #endif

@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     gtk_container_add(GTK_CONTAINER(widget_data->window), widget_data->grid);
 
     // Afficher la fenêtre et lancer la boucle d'événements GTK+
-    g_signal_connect(widget_data->window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(widget_data->window, "delete-event", G_CALLBACK(search_button_quit), widget_data);
     gtk_widget_show_all(widget_data->window);
     gtk_main();
 
