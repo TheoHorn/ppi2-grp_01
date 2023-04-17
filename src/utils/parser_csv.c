@@ -92,7 +92,6 @@ int parse_to_station(csv_reader_t* reader, station_t array[]) {
         fprintf(stderr, "Impossible de trouver le fichier '%s'\n", reader->filename);
         return EXIT_FAILURE;
     }
-
     char line[reader->max_line_size];
     char* field, *copy, *tmp;
 
