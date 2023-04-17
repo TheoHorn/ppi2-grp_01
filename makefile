@@ -7,7 +7,7 @@ LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
 
 ALL_EXECUTABLES=parser_csv_test calculate_distance_test dijkstra_test time_distance_calcul_test degree_of_station_test france_map search_button graphics search_button_test france_map_test
-ALL_O= parser_csv.o station.o car.o dijkstra.o search_button.o france_map.o graphics.o
+ALL_O= parser_csv.o station.o car.o dijkstra.o search_button.o france_map.o graphics.o option_display.o
 
 all: $(ALL_EXECUTABLES)
 
@@ -38,7 +38,10 @@ search_button.o : src/graphics/search_button.c src/station.o
 france_map.o : src/graphics/france_map.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 
-graphics.o : src/graphics/graphics.c src/graphics/france_map.o src/graphics/search_button.o src/station.o src/utils/parser_csv.o
+option_display.o : src/graphics/option_display.c src/station.o
+	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
+
+graphics.o : src/graphics/graphics.c src/station.o src/utils/parser_csv.o 
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 #   -----------------
 
@@ -76,8 +79,12 @@ search_button: src/graphics/search_button.o src/station.o src/utils/parser_csv.o
 	$(MAKE) station.o parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-graphics: src/graphics/graphics.o src/graphics/search_button.o src/graphics/france_map.o src/station.o src/utils/parser_csv.o
-	$(MAKE) station.o parser_csv.o france_map.o search_button.o
+option_display: src/graphics/option_display.o src/station.o src/utils/parser_csv.o
+	$(MAKE) station.o parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+graphics: src/graphics/graphics.o src/station.o src/utils/parser_csv.o 
+	$(MAKE) station.o parser_csv.o 
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 
@@ -87,6 +94,10 @@ search_button_test: src/test/search_button_test.c src/graphics/search_button.o s
 
 france_map_test: src/test/france_map_test.c src/graphics/france_map.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+option_display_test: src/test/option_display_test.c src/graphics/option_display.o src/station.o src/utils/parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
 #   -------
 
 

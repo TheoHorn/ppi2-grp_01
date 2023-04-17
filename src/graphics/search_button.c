@@ -138,13 +138,6 @@ void on_search_button_clicked(GtkButton *button, gpointer data)
     free_parsed_station(stations);
 }
 
-void on_label_clicked(GtkWidget *widget, gpointer data) {
- 
-  GtkWidget *child = gtk_bin_get_child (GTK_BIN(widget));
-  GtkWidget *label = GTK_LABEL (child);
-  g_print("%s\n", gtk_label_get_text(label));
-}
-
 void init_search_button(WidgetDataSB *widget_data){
     widget_data->search_entry  = gtk_entry_new();
     widget_data->search_button = gtk_button_new_with_label("Rechercher");
@@ -178,13 +171,13 @@ void init_search_button(WidgetDataSB *widget_data){
     
 
     // Connecter les signaux
-    g_signal_connect(widget_data->search_button, "clicked", G_CALLBACK(on_search_button_clicked), widget_data);
-    g_signal_connect(widget_data->label1->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
-    g_signal_connect(widget_data->label2->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
-    g_signal_connect(widget_data->label3->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
-    g_signal_connect(widget_data->label4->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
-    g_signal_connect(widget_data->label5->event_box, "button_press_event", G_CALLBACK(on_label_clicked), NULL);
-    
-    
+    g_signal_connect(widget_data->search_button, "clicked", G_CALLBACK(on_search_button_clicked), widget_data);  
+    /*g_signal_connect(wd->wsb->label1->event_box, "button_press_event", G_CALLBACK(on_label_clicked), wd->wfm);
+    g_signal_connect(wd->wsb->label2->event_box, "button_press_event", G_CALLBACK(on_label_clicked), wd->wfm);
+    g_signal_connect(wd->wsb->label3->event_box, "button_press_event", G_CALLBACK(on_label_clicked), wd->wfm);
+    g_signal_connect(wd->wsb->label4->event_box, "button_press_event", G_CALLBACK(on_label_clicked), wd->wfm);
+    g_signal_connect(wd->wsb->label5->event_box, "button_press_event", G_CALLBACK(on_label_clicked), wd->wfm);
+    g_signal_connect(wd->window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+    */
 
 }

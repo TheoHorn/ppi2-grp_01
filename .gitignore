@@ -338,7 +338,6 @@ station
 calculate_distance_test
 france_map_test
 search_button_test
-graphics
 dijkstra
 station.o
 parser_csv.o
