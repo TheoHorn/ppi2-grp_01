@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "station_node_priority_queue.h"
 
-
+// Create a queue as a binary tree with value, left and right null
 station_node_queue* create_queue(){
     station_node_queue *queue = malloc(sizeof(station_node_queue));
     queue->value = NULL;
@@ -10,6 +10,7 @@ station_node_queue* create_queue(){
     return queue;
 }
 
+// Add a station_node to the queue considering the heuristic value for its ranking
 station_node_queue* add_to_queue(station_node_queue *root, station_node *value){
     if(root == NULL){
         root = create_queue();
@@ -29,7 +30,7 @@ station_node_queue* add_to_queue(station_node_queue *root, station_node *value){
     return root;
 }
 
-
+// Remove the first element of the queue (the one with the lowest heuristic value) and return it
 station_node* unqueue(station_node_queue **root){
     if(*root == NULL || (*root)->value == NULL){
         return NULL;
@@ -50,11 +51,12 @@ station_node* unqueue(station_node_queue **root){
     }
 }
 
+// Check if the queue is empty
 bool queue_is_empty(station_node_queue *root){
     return root->value == NULL;
 }
 
-
+// Check if a station is in the queue
 bool is_in_queue(station_node_queue *root, station_t *station){
     if(root == NULL || root->value == NULL){
         return false;
@@ -67,7 +69,7 @@ bool is_in_queue(station_node_queue *root, station_t *station){
     }
 }
 
-// Peut-être supprimer de la file si cout plus grand
+// Check if a station is in the queue with a lower cost
 bool is_in_queue_with_lower_cost(station_node_queue *root, station_node *station){
     if(root == NULL || root->value == NULL){
         return false;
@@ -85,7 +87,7 @@ bool is_in_queue_with_lower_cost(station_node_queue *root, station_node *station
     return false;
 }
 
-
+// Create a station_node with the given parameters and return it. The parent is null by default and the battery_after_charge is 0
 station_node* create_station_node(station_t *station, double cost, double heuristic){
     station_node *node = malloc(sizeof(station_node));
     node->station = station;
@@ -96,6 +98,7 @@ station_node* create_station_node(station_t *station, double cost, double heuris
     return node;
 }
 
+// Free the queue memory
 void free_queue(station_node_queue *root){
     if(root->left != NULL){
         free_queue(root->left);
