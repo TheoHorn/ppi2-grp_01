@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include <ctype.h>
 
 #include "../utils/parser_csv.h"
 
@@ -28,14 +29,14 @@ typedef struct{
  * @param tps_recharge Le temps de recharge max voulu
  * @param payant Si l'on souhaite avoir des recharges payantes ou non
 */
-typedef struct{
+typedef struct Data{
     char* borne_depart;
     char* borne_arrivee;
-    int min_bat;
-    int max_bat;
-    int current_bat;
-    int tps_recharge;
-    bool payant;
+    char* min_bat;
+    char* max_bat;
+    char* current_bat;
+    char* tps_recharge;
+    char* payant;
 }Data;
 
 /**
@@ -93,15 +94,19 @@ typedef struct WD{
     bool payant;
 } WD;
 
+
+struct Data dataUser;
+
+
 void initialize(WD *wd){
     //data
-    wd->borne_depart = "--";
-    wd->borne_arrivee = "--";
-    wd->min_bat = 0;
-    wd->max_bat = 80;
-    wd->current_bat = 50;
-    wd->tps_recharge = 10;
-    wd->payant = false;
+    dataUser.borne_depart ="--"; //100 caractères max
+    dataUser.borne_arrivee = "--"; //100 caractères max
+    dataUser.tps_recharge = "20";
+    dataUser.payant = "Non";
+    dataUser.min_bat = "5";
+    dataUser.max_bat = "95";
+    dataUser.current_bat = "50";
     //fin data
 
     //search box
@@ -146,37 +151,37 @@ void initialize(WD *wd){
 
     wd->od_lbl_dep = gtk_label_new("Borne de départ ");
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_dep, 0, 1, 1, 1);
-    wd->od_lbl_dep_voulu = gtk_label_new(*wd->borne_depart);
+    wd->od_lbl_dep_voulu = gtk_label_new(dataUser.borne_depart);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_dep_voulu, 0, 2, 1, 1);
 
     wd->od_lbl_arr = gtk_label_new("Borne d'arrivée ");
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_arr, 1, 1, 1, 1);
-    wd->od_lbl_arr_voulu = gtk_label_new(wd->borne_arrivee);
+    wd->od_lbl_arr_voulu = gtk_label_new(dataUser.borne_arrivee);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_arr_voulu, 1, 2, 1, 1);
 
     wd->od_lbl_min_bat = gtk_label_new("Batterie minimale ");
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_min_bat, 2, 1, 1, 1);
-    wd->od_lbl_min_voulu = gtk_label_new(wd->min_bat);
+    wd->od_lbl_min_voulu = gtk_label_new(dataUser.min_bat);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_min_voulu, 2, 2, 1, 1);
 
     wd->od_lbl_max_bat = gtk_label_new("Batterie maximale ");
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_max_bat, 3, 1, 1, 1);
-    wd->od_lbl_max_voulu = gtk_label_new(wd->max_bat);
+    wd->od_lbl_max_voulu = gtk_label_new(dataUser.max_bat);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_max_voulu, 3, 2, 1, 1);
 
     wd->od_lbl_current_bat = gtk_label_new("Batterie actuelle ");
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_current_bat, 4, 1, 1, 1);
-    wd->od_lbl_current_voulu = gtk_label_new(wd->current_bat);
+    wd->od_lbl_current_voulu = gtk_label_new(dataUser.current_bat);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_current_voulu, 4, 2, 1, 1);
 
     wd->od_lbl_tps_recharge = gtk_label_new("Temps de recharge ");
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_tps_recharge, 5, 1, 1, 1);
-    wd->od_lbl_tps_recharge_voulu = gtk_label_new(wd->tps_recharge);
+    wd->od_lbl_tps_recharge_voulu = gtk_label_new(dataUser.tps_recharge);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_tps_recharge_voulu, 5, 2, 1, 1);
 
     wd->od_lbl_station_payante = gtk_label_new("Station payante ");
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_station_payante, 6, 1, 1, 1);
-    wd->od_lbl_station_payante_voulu = gtk_label_new(wd->payant);
+    wd->od_lbl_station_payante_voulu = gtk_label_new(dataUser.payant);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_station_payante_voulu, 6, 2, 1, 1);
     //fin option display
 
@@ -195,7 +200,6 @@ void initialize(WD *wd){
  */
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     if (widget == NULL || data == NULL) {}
-    WD *wd = (WD *) data;
     // Récupérer les données
     csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
     station_t stations[DATASET_STATIONS_LINES];
@@ -214,8 +218,8 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
     int idDepart = -1;
     int idArrivée = -1;
-    char * b_dep = wd->borne_depart;
-    char * b_arr = wd->borne_arrivee;
+    char * b_dep = dataUser.borne_depart;
+    char * b_arr = dataUser.borne_arrivee;
     // Dessiner les stations
     int radius;
     for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
@@ -412,25 +416,37 @@ void on_search_button_clicked(GtkButton *button, gpointer data)
 
 
 void on_label_clicked(GtkWidget *widget, gpointer data) {
-    WD *wd = (WD*) data;
+    WD *wd =  (WD *) data;   
     GtkWidget *child = gtk_bin_get_child (GTK_BIN(widget));
-    GtkWidget *label = GTK_LABEL (child);
-    char* borne_dep = malloc(sizeof(char) * 100);
-    g_print("tps : %d\n", wd->tps_recharge);
-    /*strcpy(borne_dep, wd->borne_depart);
-    g_print("Borne de départ : %s\n", wd->borne_depart);
-    char *borne_arr = malloc(sizeof(char) * 100);
-    strcpy(borne_arr, wd->borne_arrivee);
-    if (strcmp(borne_dep, "--") == 0){
-            wd->borne_depart = gtk_label_get_text(label);
-    }else if (strcmp(borne_arr, "--") == 0){
-            wd->borne_arrivee = gtk_label_get_text(label);
+    GtkLabel *label = GTK_LABEL (child);
+    if (strcmp(dataUser.borne_depart, "--") == 0){
+            dataUser.borne_depart = gtk_label_get_text(label);
+    }else if (strcmp(dataUser.borne_arrivee, "--") == 0){
+            dataUser.borne_arrivee = gtk_label_get_text(label);
     }else{
-            wd->borne_depart = gtk_label_get_text(label);
-            wd->borne_arrivee = "--";
-    }*/
-}
+            dataUser.borne_depart = gtk_label_get_text(label);
+            dataUser.borne_arrivee = "--";
+    }
+    GtkLabel *label_dep = GTK_LABEL(wd->od_lbl_dep_voulu);
+    GtkLabel *label_arr = GTK_LABEL(wd->od_lbl_arr_voulu);
+    gtk_label_set_text(label_dep, "dp");
+    gtk_label_set_text(label_arr, "da");
+    /*
+    GtkWidget *childg = gtk_grid_get_child_at(GTK_GRID(wd->od_grid), 0, 2);
+    if (childg != NULL) {
+        gtk_container_remove(GTK_CONTAINER(GTK_GRID(wd->od_grid)), childg);
+    }
+    wd->od_lbl_dep_voulu = gtk_label_new(dataUser.borne_depart);
+    gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_dep_voulu, 0, 2, 1, 1);
 
+    childg = gtk_grid_get_child_at(GTK_GRID(wd->od_grid), 1, 2);
+    if (childg != NULL) {
+        gtk_container_remove(GTK_CONTAINER(GTK_GRID(wd->od_grid)), childg);
+    }
+    wd->od_lbl_arr_voulu = gtk_label_new(dataUser.borne_arrivee);
+    gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_arr_voulu, 1, 2, 1, 1);
+    */
+}
 //end of fonction de gestion des événements
 
 void connect_signals(WD *wd) {
