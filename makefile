@@ -49,6 +49,9 @@ astar.o : src/astar.c src/station_node_priority_queue.o
 
 station_node_priority_queue.o : src/station_node_priority_queue.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/$@
+
+simulation.o : src/simulation.c
+	$(CC) $(CFLAGS) -c $< -o src/$@
 #   -----------------
 
 # --- Tests ---
@@ -96,7 +99,9 @@ graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o
 
 #   -------
 
-
+simulation_test: src/test/simulation_test.c src/simulation.o src/astar.o src/station.o src/utils/parser_csv.o src/station_node_priority_queue.o
+	$(MAKE) station.o parser_csv.o astar.o simulation.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 clean:
 	find . -name '*.o' -type f -delete

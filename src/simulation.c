@@ -2,50 +2,35 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <assert.h>
+#include <math.h>
 
-station_t* current_position(car_t *car, station_t** path, int nbMinutes){
-    int i = 0;
-    /*
-    while (path[i] != NULL){
-        if (path[i] ==){
+#define VITESSE 80 // km/h
+#define RADIAN 0.01745329251994329576923690768489
+
+void current_position(position_t* position, int nbStations, int nbMinutes){
+    int nbKm = nbMinutes * VITESSE / 60; // distance traveled in km
+    position->nbMinutes = nbMinutes;
+
+    double rapport=0.00;
+    int current_distance=0;
+    
+    int dist = 0;
+    for(int i = 0; i < nbStations - 1; i++){
+        current_distance = distance(position->path[i], position->path[i+1]);
+        dist += current_distance;
+        if(dist > nbKm){
+            dist -= current_distance;
+            rapport = (double)(nbKm - dist) / (double)distance(position->path[i], position->path[i+1]);
+
+            double lat = position->path[i]->latitude + rapport * (position->path[i+1]->latitude - position->path[i]->latitude);
+            double lon = position->path[i]->longitude + rapport * (position->path[i+1]->longitude - position->path[i]->longitude);
+    
+            printf("coordonnées = %f,%f\n", lat/RADIAN, lon/RADIAN);
+            position->latitude = lat;
+            position->longitude = lon;
             break;
         }
-        i++;
-    }*/
-    int j = 0;
-    while (path[i] != NULL){
-        if (j == nbMinutes){
-            return path[i];
-        }
-        j++;
-        i++;
     }
-    return NULL;
-}
-
-void generate_departure_arrival_stations(station_t *departure_station, station_t *arrival_station, station_t stations[], int nbstations){
-    int i = rand() % nbstations;
-    int j = rand() % nbstations;
-    while (i == j){
-        j = rand() % nbstations;
-    }
-    *departure_station = stations[i];
-    *arrival_station = stations[j];
-}
-
-char* simulation_at_time(int nbCars, int minute, station_t stations[], int nbstations){
-    char* result = malloc(sizeof(char) * nbstations * nbstations);
-    for (int i = 0; i < nbstations * nbstations; i++){
-        result[i] = '0';
-    }
-    for (int i = 0; i < nbCars; i++){
-        car_t car;
-        //generate_departure_arrival_stations();
-        //station_t** path = astar();
-        //station_t* current = current_position();
-        /*if (current != NULL){
-            result[current->id * nbstations + current->id] = '1';
-        }*/
-    }
-    return result;
+    // case where the car is at the end of the path
 }
