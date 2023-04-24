@@ -41,6 +41,9 @@ france_map.o : src/graphics/france_map.c src/station.o
 option_display.o : src/graphics/option_display.c src/station.o
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 
+options_user.o : src/graphics/options_user.c src/station.o
+	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
+
 graphics.o : src/graphics/graphics.c src/station.o src/utils/parser_csv.o 
 	$(CC) $(CFLAGS) -c $< -o src/graphics/$@
 
@@ -88,6 +91,9 @@ france_map_test: src/test/france_map_test.c src/graphics/france_map.o src/statio
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 option_display_test: src/test/option_display_test.c src/graphics/option_display.o src/station.o src/utils/parser_csv.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+options_user_test: src/test/options_user_test.c src/graphics/options_user.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o
