@@ -349,4 +349,6 @@ src/test/performances/degree_stations_data
 astar_test
 option_display_test
 graphics_test
+options_user_test
+option_display_test
 .glade
