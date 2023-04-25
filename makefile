@@ -96,7 +96,7 @@ option_display_test: src/test/option_display_test.c src/graphics/option_display.
 options_user_test: src/test/options_user_test.c src/graphics/options_user.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o
+graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o src/astar.o src/station_node_priority_queue.o
 	$(MAKE) station.o parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 

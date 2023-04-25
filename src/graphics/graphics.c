@@ -3,6 +3,7 @@
 #include <ctype.h>
 
 #include "../utils/parser_csv.h"
+#include "../astar.h"
 
 
 #define DRAWING_WIDTH 850
@@ -41,6 +42,11 @@ typedef struct Data{
     char* tps_recharge;
     char* payant;
 }Data;
+
+typedef struct cheminUser{
+    station_t** stations;
+    int nbStations;
+}cheminUser;
 
 /**
  * @brief Initialise un WidgetLabel
@@ -131,13 +137,87 @@ typedef struct WD{
     GtkWidget *od_lbl_tps_recharge_voulu;
     GtkWidget *od_lbl_station_payante;
     GtkWidget *od_lbl_station_payante_voulu;
+    GtkWidget *od_button;
 } WD;
 
 struct Data dataUser;
+struct cheminUser chemin;
 
 // ------------------------------------------------- FIN STRUCTURE  ------------------------------------------------ //
 //                                                                                                                   //
 // ----------------------------------------------- FONCTIONS GENERALES --------------------------------------------- //
+
+/**
+ * @brief Vérifie si la chaîne de caractères theString commence par la chaîne de caractères theBase en ignorant la casse
+ * @param theString La chaîne de caractères à vérifier
+ * @param theBase La chaîne de caractères à rechercher
+ * @return true si la chaîne de caractères theString commence par la chaîne de caractères theBase, false sinon
+*/
+bool startsWith( const char * theString, const char * theBase ) {
+    char* str = malloc(sizeof(char) * strlen(theString) + 1);
+    char* base = malloc(sizeof(char) * strlen(theBase) + 1);
+    strcpy(str, theString);
+    strcpy(base, theBase);
+    for (int i = 0; str[i] != '\0'; i++) {
+        str[i] = tolower(str[i]);
+    }
+    for (int i = 0; base[i] != '\0'; i++) {
+        base[i] = tolower(base[i]);
+    }
+    bool retour = strncmp( str, base, strlen( base ) ) == 0;
+    free(str);
+    free(base);
+    return retour;
+}
+
+/**
+ * @brief fonction qui ajoute des retour à la ligne pour une chaine de caractères
+ * @param str la chaine de caratères
+ * @param max_carac le nombre maximum de caractères par ligne
+*/
+char* to_line(char* str, int max_carac) {
+    int len = strlen(str);
+    int nb_lignes = len / max_carac + 1;
+    char* result = (char*)malloc((nb_lignes * (max_carac + 1) + 1) * sizeof(char));
+    int cur_len = 0;
+    int last_space = 0;
+    int i, j;
+    for (i = 0; i < len; i++) {
+        if (isspace(str[i])) {
+            last_space = i;
+        }
+        if (isupper(str[i])) {
+            cur_len += 2;
+        } else {
+            cur_len++;
+        }
+        if (cur_len > max_carac) {
+            if (last_space != 0) {
+                result[last_space] = '\n';
+                cur_len = i - last_space;
+                last_space = 0;
+            } else {
+                result[i] = '\n';
+                cur_len = i - last_space;
+            }
+        }
+        result[i] = str[i];
+    }
+    result[i] = '\0';
+    return result;
+}
+
+/**
+ * @brief fonction qui convertit un double en chaine de caractères
+ * @param value le double à convertir
+ * @return la chaine de caractères
+*/
+char* double_to_string(double value){
+    char *str = malloc(sizeof(char) * 16);
+    snprintf(str, 16, "%.f", value);
+    return str;
+}
+
 /**
  * @brief Initialise les données de l'interface graphique
  * @param wd La structure contenant les widgets et data de l'interface graphique
@@ -152,6 +232,8 @@ void initialize(WD *wd){
     dataUser.min_bat = "5";
     dataUser.max_bat = "95";
     dataUser.current_bat = "50";
+    chemin.stations = NULL;
+    chemin.nbStations = 0;
     //fin data
 
     //research stations box
@@ -303,6 +385,9 @@ void initialize(WD *wd){
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_station_payante, 7, 1, 1, 1);
     wd->od_lbl_station_payante_voulu = gtk_label_new(dataUser.payant);
     gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_lbl_station_payante_voulu, 7, 2, 1, 1);
+
+    wd->od_button = gtk_button_new_with_label("Lancer avec ces paramètres");
+    gtk_grid_attach(GTK_GRID(wd->od_grid), wd->od_button, 8, 1, 1, 2);
     //fin option display
 
     //main
@@ -313,8 +398,7 @@ void initialize(WD *wd){
     gtk_grid_attach(GTK_GRID(wd->grid_principal), wd->fm_box, 0, 0, 2, 2);
     gtk_grid_attach(GTK_GRID(wd->grid_principal), wd->grid_research, 2, 0, 2, 1);
     gtk_grid_attach(GTK_GRID(wd->grid_principal), wd->ou_box, 2, 1, 2, 1);
-    gtk_grid_attach(GTK_GRID(wd->grid_principal), wd->od_box, 0, 2, 3, 1);
-    
+    gtk_grid_attach(GTK_GRID(wd->grid_principal), wd->od_box, 0, 2, 4, 1);
     //fin main
 }
 
@@ -323,74 +407,34 @@ void initialize(WD *wd){
  * @param wd pointeur sur la structure contenant les widgets
 */
 void update_option_display(WD *wd){
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_vehicule_voulu), dataUser.vehicule);
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_dep_voulu), dataUser.borne_depart);
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_arr_voulu), dataUser.borne_arrivee);
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_min_voulu), dataUser.min_bat);
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_max_voulu), dataUser.max_bat);
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_current_voulu), dataUser.current_bat);
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_tps_recharge_voulu), dataUser.tps_recharge);
-    gtk_label_set_text(GTK_LABEL(wd->od_lbl_station_payante_voulu), dataUser.payant);
+    int max_carac = 30;
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_vehicule_voulu), to_line(dataUser.vehicule,max_carac));
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_dep_voulu), to_line(dataUser.borne_depart,max_carac));
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_arr_voulu), to_line(dataUser.borne_arrivee,max_carac));
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_min_voulu), to_line(dataUser.min_bat,max_carac));
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_max_voulu), to_line(dataUser.max_bat,max_carac));
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_current_voulu), to_line(dataUser.current_bat,max_carac));
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_tps_recharge_voulu), to_line(dataUser.tps_recharge,max_carac));
+    gtk_label_set_text(GTK_LABEL(wd->od_lbl_station_payante_voulu), to_line(dataUser.payant,max_carac));
 }
 
 /**
- * @brief Vérifie si la chaîne de caractères theString commence par la chaîne de caractères theBase en ignorant la casse
- * @param theString La chaîne de caractères à vérifier
- * @param theBase La chaîne de caractères à rechercher
- * @return true si la chaîne de caractères theString commence par la chaîne de caractères theBase, false sinon
+ * @brief fonction qui permet de passer des Data à des data_algo_t
+ * @param data les données à convertir
+ * @return les données converties
 */
-bool startsWith( const char * theString, const char * theBase ) {
-    char* str = malloc(sizeof(char) * strlen(theString) + 1);
-    char* base = malloc(sizeof(char) * strlen(theBase) + 1);
-    strcpy(str, theString);
-    strcpy(base, theBase);
-    for (int i = 0; str[i] != '\0'; i++) {
-        str[i] = tolower(str[i]);
+data_algo_t* normalize_data(Data *data){
+    data_algo_t* data_algo = malloc(sizeof(data_algo_t));
+    data_algo->current_bat = atof(data->current_bat);
+    data_algo->max_bat = atof(data->max_bat);
+    data_algo->min_bat = atof(data->min_bat);
+    data_algo->tps_recharge = atof(data->tps_recharge);
+    if (strcmp(data->payant, "OUI")) {
+        data_algo->payant = true;
+    } else {
+        data_algo->payant = false;
     }
-    for (int i = 0; base[i] != '\0'; i++) {
-        base[i] = tolower(base[i]);
-    }
-    bool retour = strncmp( str, base, strlen( base ) ) == 0;
-    free(str);
-    free(base);
-    return retour;
-}
-
-/**
- * @brief fonction qui ajoute des retour à la ligne pour une chaine de caractères
- * @param str la chaine de caratères
- * @param max_carac le nombre maximum de caractères par ligne
-*/
-char* to_line(char* str, int max_carac) {
-    int len = strlen(str);
-    int nb_lignes = len / max_carac + 1;
-    char* result = (char*)malloc((nb_lignes * (max_carac + 1) + 1) * sizeof(char));
-    int cur_len = 0;
-    int last_space = 0;
-    int i, j;
-    for (i = 0; i < len; i++) {
-        if (isspace(str[i])) {
-            last_space = i;
-        }
-        if (isupper(str[i])) {
-            cur_len += 2;
-        } else {
-            cur_len++;
-        }
-        if (cur_len > max_carac) {
-            if (last_space != 0) {
-                result[last_space] = '\n';
-                cur_len = i - last_space;
-                last_space = 0;
-            } else {
-                result[i] = '\n';
-                cur_len = i - last_space;
-            }
-        }
-        result[i] = str[i];
-    }
-    result[i] = '\0';
-    return result;
+    return data_algo;
 }
 
 // --------------------------------------------- FIN FONCTIONS GENERALES -------------------------------------------- //
@@ -406,7 +450,6 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     station_t stations[DATASET_STATIONS_LINES];
     parse_to_station(&reader, stations);
     
-    // Dessiner la France
     // Dessiner une bordure
     cairo_set_source_rgba(cr, 0,0,0,1);
     cairo_rectangle(cr, 0, 0, DRAWING_WIDTH, DRAWING_HEIGHT);
@@ -441,7 +484,19 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
             cairo_fill(cr);
         }
     }
-
+    if(chemin.stations != NULL && chemin.nbStations > 2){
+        for(int i = 1; i < chemin.nbStations-1; i++){
+            radius = 6;
+            cairo_set_source_rgba(cr, 0, 0, 0,1);
+            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 - chemin.stations[i]->longitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+            //remplissage bleu
+            radius = 5;
+            cairo_set_source_rgba(cr, 0, 0, 1,1);
+            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 -chemin.stations[i]->latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+        }
+    }
     //affichage départ
     if(idDepart != -1){
         //contour noir
@@ -456,19 +511,6 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
         cairo_arc(cr, stations[idDepart].longitude*3000 + 300, 2700 - stations[idDepart].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
     }
-
-    //affichage chemin
-    /*if(){
-            radius = 6;
-            cairo_set_source_rgba(cr, 0, 0, 0,1);
-            cairo_arc(cr, chemin[i].longitude*3000 + 300, 2700 - chemin[i].latitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
-            //remplissage bleu
-            radius = 5;
-            cairo_set_source_rgba(cr, 0, 0, 1,1);
-            cairo_arc(cr, chemin[i].longitude*3000 + 300, 2700 - chemin[i].latitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
-        }*/
 
     //affichage arrivée
     if (idArrivée != -1){
@@ -702,11 +744,6 @@ void on_use_car_clicked(GtkWidget *widget, gpointer data){
     g_list_free(children);
 }
 
-char* double_to_string(double value){
-    char *str = malloc(sizeof(char) * 16);
-    snprintf(str, 16, "%.f", value);
-    return str;
-}
 /**
  * @brief Fonction qui permet de récupérer les données de l'utilisateur sur l'option
  * @param widget Le widget qui a appelé la fonction
@@ -734,6 +771,62 @@ void on_ou_button_clicked(GtkWidget *widget, gpointer data){
     update_option_display(wd);
     g_list_free(children);
 }
+
+/**
+ * @brief Fonction qui permet de lancer l'algorithme de recherche de trajet
+ * @param widget Le widget qui a appelé la fonction
+ * @param data Les données de l'utilisateur
+*/
+void on_od_button_clicked(GtkWidget *widget, gpointer data){
+    WD *wd = (WD *) data;
+    GtkWidget *drawing_area = GTK_WIDGET(wd->fm_drawing_area);
+
+    data_algo_t* data_algo = normalize_data(&dataUser);
+    station_t* station_depart = malloc(sizeof(station_t));
+    station_t *station_arrivee = malloc(sizeof(station_t));
+    car_t *car = malloc(sizeof(car_t));
+
+    csv_reader_t reader_station = create_reader_default(DATASET_PATH_STATIONS);
+    csv_reader_t reader_car = create_reader_default(DATASET_PATH_CARS);
+    station_t stations[DATASET_STATIONS_LINES];
+    car_t cars[DATASET_CARS_LINES];
+    parse_to_station(&reader_station, stations);
+    parse_to_car(&reader_car, cars);
+
+    for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
+        if (strcmp(stations[i].name, dataUser.borne_depart) == 0) {
+            station_depart = &stations[i];
+        }
+        if (strcmp(stations[i].name, dataUser.borne_arrivee) == 0) {
+           station_arrivee = &stations[i];
+        }
+    }
+
+    for(int j = 0; j < DATASET_CARS_LINES; j++){
+        if(strcmp(cars[j].name, dataUser.vehicule) == 0){
+            car = &cars[j];
+        }
+    }
+
+    if(strcmp(dataUser.borne_depart, "--") == 0 || strcmp(dataUser.borne_arrivee, "--") == 0 || strcmp(dataUser.vehicule, "--") == 0){
+        GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(wd->window), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Veuillez sélectionner une station de départ, une station d'arrivée et un véhicule");
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+    }else{
+        station_t** path = path_generation(stations,station_depart, station_arrivee,DATASET_STATIONS_LINES, car, data_algo);
+        if(path == NULL){
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(wd->window), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Aucun chemin trouvé");
+            gtk_dialog_run(GTK_DIALOG(dialog));
+            gtk_widget_destroy(dialog);
+        }else{
+            g_print("chemin trouvé");
+            chemin.stations = path;
+            chemin.nbStations = path_size(path, *station_arrivee);
+            g_print("%d", chemin.nbStations);
+            gtk_widget_queue_draw(drawing_area);
+        }
+    }
+}
 // -------------------------------------- FIN FONCTIONS DE GESTION DES SIGNAUX -------------------------------------- //
 //                                                                                                                    //
 // ------------------------------------- FONCTIONS DE CONNEXION ET D'AFFICHAGE -------------------------------------- //
@@ -745,7 +838,7 @@ void on_ou_button_clicked(GtkWidget *widget, gpointer data){
 void connect_signals(WD *wd) {
     g_signal_connect(wd->ss_search_button, "clicked", G_CALLBACK(on_search_station_button_clicked), wd);
     g_signal_connect(wd->sc_search_button, "clicked", G_CALLBACK(on_search_car_button_clicked), wd);
-    g_signal_connect(G_OBJECT(wd->fm_drawing_area), "draw", G_CALLBACK(on_draw), wd);
+    g_signal_connect(wd->fm_drawing_area, "draw", G_CALLBACK(on_draw), wd);
     g_signal_connect(wd->ss_label1->button, "clicked", G_CALLBACK(on_use_station_clicked), wd);
     g_signal_connect(wd->ss_label2->button, "clicked", G_CALLBACK(on_use_station_clicked), wd);
     g_signal_connect(wd->ss_label3->button, "clicked", G_CALLBACK(on_use_station_clicked), wd);
@@ -757,6 +850,7 @@ void connect_signals(WD *wd) {
     g_signal_connect(wd->sc_label4->button, "clicked", G_CALLBACK(on_use_car_clicked), wd);
     g_signal_connect(wd->sc_label5->button, "clicked", G_CALLBACK(on_use_car_clicked), wd);
     g_signal_connect(wd->ou_button, "clicked", G_CALLBACK(on_ou_button_clicked), wd);
+    g_signal_connect(wd->od_button, "clicked", G_CALLBACK(on_od_button_clicked), wd);
 }
 
 /**
@@ -797,4 +891,3 @@ int main(int argc, char *argv[]) {
     g_signal_connect(wd->window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
     gtk_main();
 }
-
