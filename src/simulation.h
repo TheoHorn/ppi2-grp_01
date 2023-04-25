@@ -1,9 +1,12 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "car.h"
-#include "station.h"
+#include "astar.h"
+#include "time.h"
 
+// current position of the car at the time nbMinutes
+void current_position(station_t stations[], int nbStations, car_t car[], int nbCars, int nbMinutes);
+/*
 typedef struct position_t {
     station_t** path; // path of the car
     double latitude, longitude; // coordinate with longitude and latitude converted in radian for calculation
@@ -15,7 +18,7 @@ typedef struct position_t {
 
 // current position of the car at the time nbMinutes
 void current_position(position_t* position, int nbStations, int nbMinutes);
-/*
+
 //generate random departure and arrival stations
 void generate_departure_arrival_stations(station_t *departure_station, station_t *arrival_station, station_t stations[], int nbstations);
 
