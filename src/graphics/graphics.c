@@ -441,8 +441,25 @@ data_algo_t* normalize_data(Data *data){
 //                                                                                                                    //
 // ------------------------------------------------ FONCTION DE DESSIN ---------------------------------------------- //
 /**
- * Dessine la carte de France
- */
+ * @brief Dessine une ligne entre deux points
+ * @param cr contexte cairo
+ * @param x1 abscisse du premier point
+ * @param y1 ordonnée du premier point
+ * @param x2 abscisse du deuxième point
+ * @param y2 ordonnée du deuxième point
+*/
+void draw_line(cairo_t *cr, double x1, double y1, double x2, double y2) {
+    cairo_move_to(cr, x1, y1);
+    cairo_line_to(cr, x2, y2);
+    cairo_stroke(cr);
+}
+
+/**
+ * @brief Dessine la carte de France
+ * @param widget widget de dessin
+ * @param cr contexte cairo
+ * @param data données de l'application
+*/
 gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     if (widget == NULL || data == NULL) {}
     // Récupérer les données
@@ -484,19 +501,6 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
             cairo_fill(cr);
         }
     }
-    if(chemin.stations != NULL && chemin.nbStations > 2){
-        for(int i = 1; i < chemin.nbStations-1; i++){
-            radius = 6;
-            cairo_set_source_rgba(cr, 0, 0, 0,1);
-            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 - chemin.stations[i]->longitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
-            //remplissage bleu
-            radius = 5;
-            cairo_set_source_rgba(cr, 0, 0, 1,1);
-            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 -chemin.stations[i]->latitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
-        }
-    }
     //affichage départ
     if(idDepart != -1){
         //contour noir
@@ -510,6 +514,24 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
         cairo_set_source_rgba(cr, 0, 1, 0,1);
         cairo_arc(cr, stations[idDepart].longitude*3000 + 300, 2700 - stations[idDepart].latitude*3000, radius, 0, 2 * G_PI);
         cairo_fill(cr);
+    }
+
+    if(chemin.stations != NULL){
+        for(int i = 1; i < chemin.nbStations-1; i++){
+            radius = 6;
+            cairo_set_source_rgba(cr, 0, 0, 0,1);
+            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 - chemin.stations[i]->longitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+            //remplissage bleu
+            radius = 5;
+            cairo_set_source_rgba(cr, 0, 0, 1,1);
+            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 -chemin.stations[i]->latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+        }
+        cairo_set_source_rgb(cr, 0, 0, 1);
+        for(int i = 0; i < chemin.nbStations-1; i++){
+            draw_line(cr, chemin.stations[i]->longitude*3000 + 300, 2700 - chemin.stations[i]->latitude*3000, chemin.stations[i+1]->longitude*3000 + 300, 2700 - chemin.stations[i+1]->latitude*3000);
+        }
     }
 
     //affichage arrivée
@@ -826,6 +848,8 @@ void on_od_button_clicked(GtkWidget *widget, gpointer data){
             gtk_widget_queue_draw(drawing_area);
         }
     }
+    free_parsed_car(cars);
+    free_parsed_station(stations);
 }
 // -------------------------------------- FIN FONCTIONS DE GESTION DES SIGNAUX -------------------------------------- //
 //                                                                                                                    //
