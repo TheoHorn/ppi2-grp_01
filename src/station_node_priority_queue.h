@@ -38,3 +38,5 @@ bool queue_is_empty(station_node_queue *root);
 
 
 void free_queue(station_node_queue *root);
+
+void print_queue(station_node_queue *root);

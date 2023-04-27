@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "station_node_priority_queue.h"
 
 // Create a queue as a binary tree with value, left and right null
@@ -108,4 +109,21 @@ void free_queue(station_node_queue *root){
     }
     free(root->value);
     free(root);
+}
+
+
+void print_queue(station_node_queue *root){
+    if(root->left != NULL){
+        print_queue(root->left);
+    }
+
+    if(root->value != NULL){
+        printf("(%d : %d) ", root->value->station->id, (int) root->value->heuristic);
+    }
+    
+
+    if(root->right != NULL){
+        print_queue(root->right);
+    }
+
 }

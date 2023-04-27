@@ -15,6 +15,7 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
     double max_battery = 0.4;
     double current_battery = 0.9;
     double max_time = 20;
+    bool only_free = false;
 
     // Car battery before the start
     starting_node->battery_after_charge = current_battery;
@@ -37,8 +38,8 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
             double distMin = car->range * node->battery_after_charge - car->range * max_battery;
 
             // Calculation of the adjacents stations (between dmax and dmin distance)
-            station_node **neighbours = adjacentStations(stations, node, nbstations, last_station, distMax, distMin);
-            
+            station_node **neighbours = adjacentStations(stations, node, nbstations, last_station, distMax, distMin, only_free);
+
             int i = 0;
             while(neighbours[i]->station != NULL){
                 station_node *n = neighbours[i];
@@ -75,7 +76,7 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
 } 
 
 // Calculate the stations in range of the current station
-station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, station_t *last_station, double distMax, double distMin){
+station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, station_t *last_station, double distMax, double distMin, bool only_free){
     station_node **neighbours = malloc(sizeof(station_node) * nbStations);
     int nbNeighbours = 0;
 
@@ -88,7 +89,7 @@ station_node **adjacentStations(station_t stations[], station_node *node, int nb
     else{
         for(int i = 0; i < nbStations; i++){
             double dist = distance(node->station, &stations[i]);
-            if(dist >= distMin && dist <= distMax){
+            if(dist >= distMin && dist <= distMax && (node->station->is_free || !only_free)){
                 neighbours[nbNeighbours] = create_station_node(&stations[i], node->cost + dist, 0);
                 neighbours[nbNeighbours]->parent = (struct station_node_t*) node;
                 nbNeighbours++;

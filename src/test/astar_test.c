@@ -7,8 +7,10 @@
 
 int main()
 {
-    int depart = 2123;
-    int arrivee = 8317;
+    //int depart = 14772;
+    //int arrivee = 12611;
+    int depart = 746;
+    int arrivee = 12070;
 
     csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
     station_t stations[DATASET_STATIONS_LINES];
@@ -23,7 +25,12 @@ int main()
     clock_t t=0;
 
     station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], DATASET_STATIONS_LINES, car);
-    print_path(path, path_size(path, stations[arrivee]));
+    if(path != NULL){
+        print_path(path, path_size(path, stations[arrivee]));
+    }
+    else{
+        printf("Path not found\n");
+    }
     free(path);
 
     // Timer off  

@@ -81,6 +81,10 @@ degree_of_station_test: src/test/performances/degree_of_station.c src/station.o 
 	$(MAKE) station.o parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
+astar_perf : src/test/performances/astar_perf.c src/astar.o src/station.o src/utils/parser_csv.o src/station_node_priority_queue.o
+	$(MAKE) station.o parser_csv.o astar.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
 #  -----------------
 
 #  --- Graphics Tests ---
