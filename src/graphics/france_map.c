@@ -4,7 +4,7 @@
 #include "../utils/parser_csv.h"
 #include "france_map.h"
 
-
+#include "stdio.h"
 #include "stdlib.h"
 
 
@@ -103,7 +103,6 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     return TRUE;
 }
 /*
-/**
  * Redessine un point lorsque l'on clique sur un bouton
  
 void on_button_clicked_dep(GtkWidget *button, gpointer data) {

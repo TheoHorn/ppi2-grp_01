@@ -6,8 +6,8 @@ LDFLAGS+= -fsanitize=address
 LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
 
-ALL_EXECUTABLES=parser_csv_test calculate_distance_test dijkstra_test time_distance_calcul_test degree_of_station_test france_map search_button graphics search_button_test france_map_test astar_test
-ALL_O= parser_csv.o station.o car.o dijkstra.o search_button.o france_map.o graphics.o option_display.o astar.o
+ALL_EXECUTABLES=parser_csv_test calculate_distance_test dijkstra_test astar_test time_distance_calcul_test degree_of_station_test search_button_test france_map_test option_display_test options_user_test graphics_test
+ALL_O=parser_csv.o station.o car.o dijkstra.o astar.o station_node_priority_queue.o search_button.o france_map.o option_display.o options_user.o graphics.o
 
 all: $(ALL_EXECUTABLES)
 
@@ -100,7 +100,7 @@ option_display_test: src/test/option_display_test.c src/graphics/option_display.
 options_user_test: src/test/options_user_test.c src/graphics/options_user.o src/station.o src/utils/parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o
+graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o src/astar.o src/station_node_priority_queue.o
 	$(MAKE) station.o parser_csv.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 

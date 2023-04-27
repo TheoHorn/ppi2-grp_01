@@ -23,8 +23,17 @@ int main()
 
     // Timer on
     clock_t t=0;
+    data_algo_t *param = malloc(sizeof(data_algo_t));
+    param->borne_depart = &stations[depart];
+    param->borne_arrivee = &stations[arrivee];
+    param->vehicule = car;
+    param->min_bat = 0.2;
+    param->max_bat = 0.8;
+    param->current_bat = 0.5;
+    param->tps_recharge = 0.5;
+    param->payant = false;
 
-    station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], DATASET_STATIONS_LINES, car);
+    station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], DATASET_STATIONS_LINES, car, param);
     if(path != NULL){
         print_path(path, path_size(path, stations[arrivee]));
     }
@@ -36,8 +45,8 @@ int main()
     // Timer off  
     t = clock() - t;
     printf("Temps d'execution : %f secondes\n", ((float)t)/CLOCKS_PER_SEC);
-    
 
+    free(param);
     free_parsed_car(cars);
     free_parsed_station(stations);
     return 0;
