@@ -11,7 +11,7 @@ int main()
     int nb_simulations = 20;
     int nb_minutes = 100;
 
-    for(int i=0; i<50;i++){
+    for(int i=0; i<100;i++){
         csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
         station_t stations[DATASET_STATIONS_LINES];
         car_t cars[DATASET_CARS_LINES];
@@ -26,7 +26,6 @@ int main()
         free_parsed_station(stations);
     }
 
-    
     t = clock() - t;
     printf("\nTemps d'execution : %f secondes\n", ((float)t)/CLOCKS_PER_SEC);
 

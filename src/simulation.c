@@ -14,9 +14,9 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
     int *param_arrivals = (int*)malloc(sizeof(int)*nb_simulations);
 
     for(int i=0; i<nb_simulations;i++){
-        param_cars[i] = 6;
-        param_departures[i] = 125;
-        param_arrivals[i] = 1000;
+        param_cars[i] = i;
+        param_departures[i] = i;
+        param_arrivals[i] = 152;
     }
 
     // discretization of the time
@@ -32,6 +32,8 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
         station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], nbStations, &car[voiture]);
         int path_lenght = path_size(path, stations[arrivee]);
 
+        //print_path(path, path_lenght);
+
         int km = 10*VITESSE/60;
 
         int add_time = 0;
@@ -42,29 +44,31 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
             int current_distance = distance(path[j], path[j+1]);
             add_time += (int)current_distance/km;
 
-            // time to recharge
-            double temps_recharge = car->battery/stations[j+1].power;
-            int stop_time = temps_recharge*6;
+            double energy_used = (car->consumption * current_distance)/1000;
+            double time_to_charge = (energy_used / stations[j+1].power) * 60;
 
-            // check if the car is on the road or if it is charging
-            if(nb_minutes>add_time && nb_minutes<add_time+stop_time){
-                add_car_to_station(&stations[path[j+1]->id], car);
+            time_to_charge = round(time_to_charge) / 10;
 
-                arrived = false;
+            // case car arrived
+            if(nb_minutes>add_time && path[j+1]->id == arrivee){
+                    break;
+            }
+
+            // case car at a station
+            if(nb_minutes>add_time && nb_minutes<add_time+time_to_charge){
+                add_car_to_station(&stations[path[j+1]->id], &car[voiture]);
                 break;
             }
+            // case car on the road
             else if(nb_minutes<=add_time){
-                arrived = false;
                 break;
             }
-            add_time += stop_time;
+            add_time += time_to_charge;
         }        
         free(path);
     }
     printf("\nAt %d minutes :", nb_minutes*10);
-    if(arrived){
-        printf(" All cars have arrived at their destination");
-    }
+    
     free_parameters(param_cars, param_departures, param_arrivals);
 }
 
@@ -73,7 +77,7 @@ void add_car_to_station(station_t* station, car_t* car){
         if(station->car_queue == NULL){
             create_queue_car(station, car);
         } else{
-            add_car_to_queue(station, car);
+            //add_car_to_queue(station, car);
         }        
     } else{
         station->num_cars_charging += 1;
