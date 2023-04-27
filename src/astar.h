@@ -23,3 +23,5 @@ station_node **adjacentStations(station_t stations[], station_node *node, int nb
 int path_size(station_t **path, station_t last_station);
 
 void print_path(station_t **path, int nbstations);
+
+char* path_to_string(station_t **path, int nbstations);

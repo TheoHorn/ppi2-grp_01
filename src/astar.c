@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 // Generate a fast path from the starting station to the last station
 station_t** path_generation(station_t stations[], station_t *starting_station, station_t *last_station, int nbstations, car_t *car, data_algo_t *data){
@@ -125,6 +126,7 @@ station_t** reconstruct_path(station_node *node){
 }
 
 int path_size(station_t **path, station_t last_station){
+    if (path == NULL) return 0;
     int i = 0;
     while(path[i]->id != last_station.id){
         i++;
@@ -137,4 +139,19 @@ void print_path(station_t **path, int nbstations){
         printf("%d -(%dkm)-> ", path[i]->id, (int)distance(path[i], path[i+1]));
     }
     printf("%d\n", path[nbstations - 1]->id);
+}
+
+char* path_to_string(station_t **path, int nbstations){
+    char *str = malloc(sizeof(char) * 1000);
+    char *tmp = malloc(sizeof(char) * 1000);
+    strcpy(str, "");
+    for(int i = 0; i < nbstations - 1; i++){
+        sprintf(tmp, "%d -(%dkm)-> ", path[i]->id, (int)distance(path[i], path[i+1]));
+        strcat(str, tmp);
+    }
+    sprintf(tmp, "%d", path[nbstations - 1]->id);
+    strcat(str, tmp);
+    free(tmp);
+    return str;
+    free(str);
 }

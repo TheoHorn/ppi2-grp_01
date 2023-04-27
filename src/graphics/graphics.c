@@ -49,19 +49,6 @@ typedef struct cheminUser{
 }cheminUser;
 
 /**
- * @brief Initialise un WidgetLabel
-*/
-WidgetLabel* init_label(){
-    WidgetLabel *widget_label = malloc(sizeof(WidgetLabel));
-    widget_label->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    widget_label->button = gtk_button_new_with_label("Use");
-    widget_label->label = gtk_label_new("");
-    gtk_box_pack_start(GTK_BOX(widget_label->box),widget_label->label , FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(widget_label->box),widget_label->button , FALSE, FALSE, 0);
-    return widget_label;
-}
-
-/**
  * @brief Structure contenant les widgets et data de l'interface graphique
 */
 typedef struct WD{
@@ -205,6 +192,7 @@ char* to_line(char* str, int max_carac) {
     }
     result[i] = '\0';
     return result;
+    free(result);
 }
 
 /**
@@ -216,6 +204,20 @@ char* double_to_string(double value){
     char *str = malloc(sizeof(char) * 16);
     snprintf(str, 16, "%.f", value);
     return str;
+}
+
+/**
+ * @brief Initialise un WidgetLabel
+ * @return Le WidgetLabel initialisé
+*/
+WidgetLabel* init_label(){
+    WidgetLabel *widget_label = malloc(sizeof(WidgetLabel));
+    widget_label->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    widget_label->button = gtk_button_new_with_label("Use");
+    widget_label->label = gtk_label_new("");
+    gtk_box_pack_start(GTK_BOX(widget_label->box),widget_label->label , FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(widget_label->box),widget_label->button , FALSE, FALSE, 0);
+    return widget_label;
 }
 
 /**
@@ -232,7 +234,7 @@ void initialize(WD *wd){
     dataUser.min_bat = "5";
     dataUser.max_bat = "95";
     dataUser.current_bat = "50";
-    chemin.stations = NULL;
+    chemin.stations = malloc(sizeof(station_t*) * 100);
     chemin.nbStations = 0;
     //fin data
 
@@ -302,10 +304,10 @@ void initialize(WD *wd){
     wd->ou_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     wd->ou_grid = gtk_grid_new();
     // Créer un GtkAdjustment pour gérer les valeurs du SpinButton
-    wd->ou_spin1 = gtk_spin_button_new(gtk_adjustment_new(1.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
-    wd->ou_spin2 = gtk_spin_button_new(gtk_adjustment_new(1.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
-    wd->ou_spin3 = gtk_spin_button_new(gtk_adjustment_new(1.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
-    wd->ou_spin4 = gtk_spin_button_new(gtk_adjustment_new(1.0, 1.0, 120.0, 1.0, 1.0, 0.0), 1.0, 0);
+    wd->ou_spin1 = gtk_spin_button_new(gtk_adjustment_new(90.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
+    wd->ou_spin2 = gtk_spin_button_new(gtk_adjustment_new(100.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
+    wd->ou_spin3 = gtk_spin_button_new(gtk_adjustment_new(95.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
+    wd->ou_spin4 = gtk_spin_button_new(gtk_adjustment_new(60.0, 1.0, 120.0, 1.0, 1.0, 0.0), 1.0, 0);
     wd->ou_label1 = gtk_label_new("Batterie minimal souhaité :");
     wd->ou_label2 = gtk_label_new(", maximale :");
     wd->ou_label3 = gtk_label_new("Batterie actuelle :");
@@ -425,9 +427,9 @@ void update_option_display(WD *wd){
 */
 data_algo_t* normalize_data(Data *data){
     data_algo_t* data_algo = malloc(sizeof(data_algo_t));
-    data_algo->current_bat = atof(data->current_bat);
-    data_algo->max_bat = atof(data->max_bat);
-    data_algo->min_bat = atof(data->min_bat);
+    data_algo->current_bat = atof(data->current_bat)/100;
+    data_algo->max_bat = atof(data->max_bat)/100;
+    data_algo->min_bat = atof(data->min_bat)/100;
     data_algo->tps_recharge = atof(data->tps_recharge);
     if (strcmp(data->payant, "OUI")) {
         data_algo->payant = true;
@@ -452,6 +454,7 @@ void draw_line(cairo_t *cr, double x1, double y1, double x2, double y2) {
     cairo_move_to(cr, x1, y1);
     cairo_line_to(cr, x2, y2);
     cairo_stroke(cr);
+    g_print("Ligne de (%f,%f) à (%f,%f)\n", x1, y1, x2, y2);
 }
 
 /**
@@ -468,7 +471,7 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     parse_to_station(&reader, stations);
     
     // Dessiner une bordure
-    cairo_set_source_rgba(cr, 0,0,0,1);
+    cairo_set_source_rgb(cr, 0,0,0);
     cairo_rectangle(cr, 0, 0, DRAWING_WIDTH, DRAWING_HEIGHT);
     cairo_fill (cr);
     // Dessiner un fond coloré
@@ -477,77 +480,73 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     cairo_rectangle(cr, border_width, border_width, DRAWING_WIDTH - 2*border_width, DRAWING_HEIGHT - 2*border_width);
     cairo_fill (cr);
 
-    int idDepart = -1;
-    int idArrivée = -1;
-    char * b_dep = dataUser.borne_depart;
-    char * b_arr = dataUser.borne_arrivee;
     // Dessiner les stations
     int radius;
-    for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
-        if (b_dep != NULL && strcmp(stations[i].name, b_dep) == 0){
-            idDepart = i;
-        }else if(b_arr != NULL && strcmp(stations[i].name, b_arr) == 0){
-            idArrivée = i;
-        }else{
+    for (int i = 0; i < DATASET_STATIONS_LINES; i++){
             //contour noir
             radius = 3;
-            cairo_set_source_rgba(cr, 0, 0, 0,1);
+            cairo_set_source_rgb(cr, 0, 0, 0);
             cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
             cairo_fill(cr);
             //remplissage orange
             radius = 2;
-            cairo_set_source_rgba(cr, 0.7, 0.3, 0,1);
+            cairo_set_source_rgb(cr, 0.7, 0.3, 0);
             cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
             cairo_fill(cr);
-        }
     }
-    //affichage départ
-    if(idDepart != -1){
-        //contour noir
-        radius = 6;
-        cairo_set_source_rgb(cr, 0, 0, 0);
-        cairo_arc(cr, stations[idDepart].longitude*3000 + 300, 2700 - stations[idDepart].latitude*3000, radius, 0, 2 * G_PI);
-        cairo_fill(cr);
-
-        //remplissage vert
-        radius = 5;
-        cairo_set_source_rgba(cr, 0, 1, 0,1);
-        cairo_arc(cr, stations[idDepart].longitude*3000 + 300, 2700 - stations[idDepart].latitude*3000, radius, 0, 2 * G_PI);
-        cairo_fill(cr);
-    }
-
-    if(chemin.stations != NULL){
-        for(int i = 1; i < chemin.nbStations-1; i++){
+    for (int i = 0; i < DATASET_STATIONS_LINES; i++){
+        if (dataUser.borne_depart != NULL && strcmp(stations[i].name, dataUser.borne_depart) == 0){
+            //contour noir
             radius = 6;
-            cairo_set_source_rgba(cr, 0, 0, 0,1);
-            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 - chemin.stations[i]->longitude*3000, radius, 0, 2 * G_PI);
+            cairo_set_source_rgb(cr, 0, 0, 0);
+            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
             cairo_fill(cr);
-            //remplissage bleu
+            //remplissage vert
             radius = 5;
-            cairo_set_source_rgba(cr, 0, 0, 1,1);
-            cairo_arc(cr, chemin.stations[i]->longitude*3000 + 300, 2700 -chemin.stations[i]->latitude*3000, radius, 0, 2 * G_PI);
+            cairo_set_source_rgb(cr, 0, 1, 0);
+            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
             cairo_fill(cr);
+        }else if(dataUser.borne_arrivee != NULL && strcmp(stations[i].name, dataUser.borne_arrivee) == 0){
+            //contour noir
+            radius = 6;
+            cairo_set_source_rgb(cr, 0, 0, 0);
+            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+            //remplissage jaune
+            radius = 5;
+            cairo_set_source_rgba(cr, 1, 1, 0,1);
+            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+            cairo_fill(cr);
+        }else{
+            if(chemin.nbStations > 2){
+                for (int j = 1; j < chemin.nbStations - 1; j++){
+                    if (chemin.stations[j]->name != NULL){
+                        g_print("station %d : %d\n", j, chemin.stations[j]->id);
+                        if ((stations[i].name, chemin.stations[j]->name) == 0){
+                        //contour bleu
+                        radius = 5;
+                        cairo_set_source_rgb(cr, 0, 0, 1);
+                        cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+                        cairo_fill(cr);
+                        }
+                    }else{
+                        g_print("station %d : NULL\n", j);
+                    }
+                }
+            }
         }
-        cairo_set_source_rgb(cr, 0, 0, 1);
-        for(int i = 0; i < chemin.nbStations-1; i++){
-            draw_line(cr, chemin.stations[i]->longitude*3000 + 300, 2700 - chemin.stations[i]->latitude*3000, chemin.stations[i+1]->longitude*3000 + 300, 2700 - chemin.stations[i+1]->latitude*3000);
-        }
-    }
-
-    //affichage arrivée
-    if (idArrivée != -1){
-        //contour noir
-        radius = 6;
-        cairo_set_source_rgb(cr, 0, 0, 0);
-        cairo_arc(cr, stations[idArrivée].longitude*3000 + 300, 2700 - stations[idArrivée].latitude*3000, radius, 0, 2 * G_PI);
-        cairo_fill(cr);
-
-        //remplissage jaune
-        radius = 5;
-        cairo_set_source_rgba(cr, 1, 1, 0,1);
-        cairo_arc(cr, stations[idArrivée].longitude*3000 + 300, 2700 - stations[idArrivée].latitude*3000, radius, 0, 2 * G_PI);
-        cairo_fill(cr);
-    }   
+    }/*
+    cairo_set_source_rgb(cr, 0, 0, 1);
+    for(int i = 0; i < chemin.nbStations-1; i++){
+        g_print("station %d : %f %f\n", i,chemin.stations[i]->longitude,chemin.stations[i]->latitude);
+        g_print("station %d+1 : %f %f\n", i,chemin.stations[i+1]->longitude,chemin.stations[i+1]->latitude);
+        double x1 = chemin.stations[i]->longitude*3000 + 300;
+        double y1 = 2700 - chemin.stations[i]->latitude*3000;
+        double x2 = chemin.stations[i+1]->longitude*3000 + 300;
+        double y2 = 2700 - chemin.stations[i+1]->latitude*3000;
+        g_print("Ligne de (%f,%f) à (%f,%f)\n", x1, y1, x2, y2);
+        draw_line(cr, x1, y1, x2, y2);
+    }*/
     free_parsed_station(stations);
     return TRUE;
 }
@@ -836,15 +835,20 @@ void on_od_button_clicked(GtkWidget *widget, gpointer data){
         gtk_widget_destroy(dialog);
     }else{
         station_t** path = path_generation(stations,station_depart, station_arrivee,DATASET_STATIONS_LINES, car, data_algo);
+        g_print("path : %s\n", path_to_string(path, path_size(path, *station_arrivee)));
         if(path == NULL){
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(wd->window), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Aucun chemin trouvé");
             gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);
         }else{
-            g_print("chemin trouvé");
             chemin.stations = path;
             chemin.nbStations = path_size(path, *station_arrivee);
-            g_print("%d", chemin.nbStations);
+            for (int i = 0; i < chemin.nbStations; i++) {
+                g_print ("station id : %d, ",chemin.stations[i]->id);
+                g_print("name : %s\n", chemin.stations[i]->name);
+                g_print("   longitude : %f, ", chemin.stations[i]->longitude);
+                g_print("latitude : %f\n", chemin.stations[i]->latitude);
+            }
             gtk_widget_queue_draw(drawing_area);
         }
     }
