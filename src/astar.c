@@ -5,17 +5,20 @@
 #include <string.h>
 
 // Generate a fast path from the starting station to the last station
-station_t** path_generation(station_t stations[], station_t *starting_station, station_t *last_station, int nbstations, car_t *car, data_algo_t *data){
+station_t** path_generation(station_t stations[], int nbstations, data_algo_t *params){
     // Initialisation of the queues
     station_node_queue *closedList = create_queue(); 
     station_node_queue *openList = create_queue();
-    station_node *starting_node = create_station_node(starting_station, 0, 0);
+    station_node *starting_node = create_station_node(params->borne_depart, 0, 0);
 
-    // TODO : Prendre les options en paramètre
-    double min_battery = data->min_bat;
-    double max_battery = data->max_bat;
-    double current_battery = data->current_bat;
-    double max_time = data->tps_recharge;
+    station_t *last_station = params->borne_arrivee;
+    car_t *car = params->vehicule;
+
+    double min_battery = params->min_bat;
+    double max_battery = params->max_bat;
+    double current_battery = params->current_bat;
+    double max_time = params->tps_recharge;
+    bool only_free = params->payant;
 
     // Car battery before the start
     starting_node->battery_after_charge = current_battery;
@@ -38,8 +41,8 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
             double distMin = car->range * node->battery_after_charge - car->range * max_battery;
 
             // Calculation of the adjacents stations (between dmax and dmin distance)
-            station_node **neighbours = adjacentStations(stations, node, nbstations, last_station, distMax, distMin);
-            
+            station_node **neighbours = adjacentStations(stations, node, nbstations, last_station, distMax, distMin, only_free);
+
             int i = 0;
             while(neighbours[i]->station != NULL){
                 station_node *n = neighbours[i];
@@ -76,7 +79,7 @@ station_t** path_generation(station_t stations[], station_t *starting_station, s
 } 
 
 // Calculate the stations in range of the current station
-station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, station_t *last_station, double distMax, double distMin){
+station_node **adjacentStations(station_t stations[], station_node *node, int nbStations, station_t *last_station, double distMax, double distMin, bool only_free){
     station_node **neighbours = malloc(sizeof(station_node) * nbStations);
     int nbNeighbours = 0;
 
@@ -89,7 +92,7 @@ station_node **adjacentStations(station_t stations[], station_node *node, int nb
     else{
         for(int i = 0; i < nbStations; i++){
             double dist = distance(node->station, &stations[i]);
-            if(dist >= distMin && dist <= distMax){
+            if(dist >= distMin && dist <= distMax && (node->station->is_free || !only_free)){
                 neighbours[nbNeighbours] = create_station_node(&stations[i], node->cost + dist, 0);
                 neighbours[nbNeighbours]->parent = (struct station_node_t*) node;
                 nbNeighbours++;

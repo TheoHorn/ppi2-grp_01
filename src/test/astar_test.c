@@ -7,8 +7,12 @@
 
 int main()
 {
-    int depart = 20;
-    int arrivee = 83;
+    //int depart = 20;
+    //int arrivee = 83;
+    //int depart = 14772;
+    //int arrivee = 12611;
+    int depart = 746;
+    int arrivee = 12070;
 
     csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
     station_t stations[DATASET_STATIONS_LINES];
@@ -21,25 +25,30 @@ int main()
 
     // Timer on
     clock_t t=0;
-    data_algo_t *param = malloc(sizeof(data_algo_t));
-    param->borne_depart = &stations[depart];
-    param->borne_arrivee = &stations[arrivee];
-    param->vehicule = car;
-    param->min_bat = 0.2;
-    param->max_bat = 0.8;
-    param->current_bat = 0.5;
-    param->tps_recharge = 0.5;
-    param->payant = false;
+    data_algo_t *params = malloc(sizeof(data_algo_t));
+    params->borne_depart = &stations[depart];
+    params->borne_arrivee = &stations[arrivee];
+    params->vehicule = car;
+    params->min_bat = 0.2;
+    params->max_bat = 0.8;
+    params->current_bat = 0.5;
+    params->tps_recharge = 0.5;
+    params->payant = false;
 
-    station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], DATASET_STATIONS_LINES, car, param);
-    print_path(path, path_size(path, stations[arrivee]));
+    station_t** path = path_generation(stations, DATASET_STATIONS_LINES, params);
+    if(path != NULL){
+        print_path(path, path_size(path, stations[arrivee]));
+    }
+    else{
+        printf("Path not found\n");
+    }
     free(path);
 
     // Timer off  
     t = clock() - t;
     printf("Temps d'execution : %f secondes\n", ((float)t)/CLOCKS_PER_SEC);
 
-    free(param);
+    free(params);
     free_parsed_car(cars);
     free_parsed_station(stations);
     return 0;
