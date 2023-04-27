@@ -12,7 +12,7 @@ typedef struct data_algo_t{
     bool payant;
 }data_algo_t;
 
-station_t** path_generation(station_t stations[], station_t *starting_station, station_t *last_station, int nbstations, car_t *car,data_algo_t *data);
+station_t** path_generation(station_t stations[], int nbstations, data_algo_t *params);
 
 station_t** reconstruct_path(station_node *node);
 

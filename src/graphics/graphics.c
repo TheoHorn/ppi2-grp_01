@@ -835,7 +835,7 @@ void on_od_button_clicked(GtkWidget *widget, gpointer data){
         gtk_dialog_run(GTK_DIALOG(dialog));
         gtk_widget_destroy(dialog);
     }else{
-        station_t** path = path_generation(stations,station_depart, station_arrivee,DATASET_STATIONS_LINES, car, data_algo);
+        station_t** path = path_generation(stations, DATASET_STATIONS_LINES, data_algo);
         if(path == NULL){
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(wd->window), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Aucun chemin trouvé");
             gtk_dialog_run(GTK_DIALOG(dialog));

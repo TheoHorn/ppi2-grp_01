@@ -4,18 +4,20 @@
 #include <math.h>
 
 // Generate a fast path from the starting station to the last station
-station_t** path_generation(station_t stations[], station_t *starting_station, station_t *last_station, int nbstations, car_t *car, data_algo_t *data){
+station_t** path_generation(station_t stations[], int nbstations, data_algo_t *params){
     // Initialisation of the queues
     station_node_queue *closedList = create_queue(); 
     station_node_queue *openList = create_queue();
-    station_node *starting_node = create_station_node(starting_station, 0, 0);
+    station_node *starting_node = create_station_node(params->borne_depart, 0, 0);
 
-    // TODO : Prendre les options en paramètre
-    double min_battery = data->min_bat;
-    double max_battery = data->max_bat;
-    double current_battery = data->current_bat;
-    double max_time = data->tps_recharge;
-    bool only_free = data->payant;
+    station_t *last_station = params->borne_arrivee;
+    car_t *car = params->vehicule;
+
+    double min_battery = params->min_bat;
+    double max_battery = params->max_bat;
+    double current_battery = params->current_bat;
+    double max_time = params->tps_recharge;
+    bool only_free = params->payant;
 
     // Car battery before the start
     starting_node->battery_after_charge = current_battery;

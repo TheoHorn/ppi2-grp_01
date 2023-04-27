@@ -24,6 +24,14 @@ int main()
     reader = create_reader_default(DATASET_PATH_CARS);
     assert(parse_to_car(&reader, cars) == 0);
     srand(time(NULL));
+    
+    data_algo_t *params = malloc(sizeof(data_algo_t));
+    params->min_bat = 0.2;
+    params->max_bat = 0.8;
+    params->current_bat = 0.5;
+    params->tps_recharge = 0.5;
+    params->payant = false;
+
     for(int i = 0; i < 200; i++){
         car_t *car = &cars[rand() % DATASET_CARS_LINES];
         int depart = rand() % DATASET_STATIONS_LINES;
@@ -34,9 +42,13 @@ int main()
             arrivee = rand() % DATASET_STATIONS_LINES;
         }
         
+        params->borne_depart = &stations[depart];
+        params->borne_arrivee = &stations[arrivee];
+        params->vehicule = car;
+
         clock_t t=clock();
 
-        station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], DATASET_STATIONS_LINES, car);
+        station_t** path = path_generation(stations, DATASET_STATIONS_LINES, params);
 
         // Timer off  
         t = clock() - t;
