@@ -11,8 +11,10 @@ int main()
     //int arrivee = 83;
     //int depart = 14772;
     //int arrivee = 12611;
-    int depart = 746;
-    int arrivee = 12070;
+    //int depart = 746;
+    //int arrivee = 12070;
+    int depart = 17;
+    int arrivee = 24;
 
     csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
     station_t stations[DATASET_STATIONS_LINES];

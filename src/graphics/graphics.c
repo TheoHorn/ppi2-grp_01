@@ -168,7 +168,7 @@ char* to_line(char* str, int max_carac) {
     char* result = (char*)malloc((nb_lignes * (max_carac + 1) + 1) * sizeof(char));
     int cur_len = 0;
     int last_space = 0;
-    int i, j;
+    int i;
     for (i = 0; i < len; i++) {
         if (isspace(str[i])) {
             last_space = i;
@@ -226,13 +226,21 @@ WidgetLabel* init_label(){
 */
 void initialize(WD *wd){
     //data
-    dataUser.borne_depart ="--"; 
-    dataUser.borne_arrivee = "--"; 
-    dataUser.vehicule = "--";
+    dataUser.borne_depart = malloc(sizeof(char) * 200);
+    strcpy(dataUser.borne_depart, "--");
+    dataUser.borne_arrivee = malloc(sizeof(char) * 200);
+    strcpy(dataUser.borne_arrivee, "--");
+    dataUser.vehicule = malloc(sizeof(char) * 200);
+    strcpy(dataUser.vehicule, "--");
+    dataUser.tps_recharge = malloc(sizeof(char) * 4);
     dataUser.tps_recharge = "20";
+    dataUser.payant = malloc(sizeof(char) * 4);
     dataUser.payant = "NON";
+    dataUser.min_bat = malloc(sizeof(char) * 4);
     dataUser.min_bat = "5";
+    dataUser.max_bat = malloc(sizeof(char) * 4);
     dataUser.max_bat = "95";
+    dataUser.current_bat = malloc(sizeof(char) * 4);
     dataUser.current_bat = "50";
     chemin.stations = malloc(sizeof(station_t*) * 100);
     chemin.nbStations = 0;
@@ -342,7 +350,7 @@ void initialize(WD *wd){
     //option display
     wd->od_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     wd->od_grid = gtk_grid_new();
-    gtk_grid_set_column_spacing(wd->od_grid, 10);
+    gtk_grid_set_column_spacing(GTK_GRID(wd->od_grid), 10);
     gtk_box_pack_start(GTK_BOX(wd->od_box), wd->od_grid, TRUE, TRUE, 0);
 
     wd->od_titre = gtk_label_new("Votre trajet");
@@ -427,6 +435,49 @@ void update_option_display(WD *wd){
 */
 data_algo_t* normalize_data(Data *data){
     data_algo_t* data_algo = malloc(sizeof(data_algo_t));
+
+    csv_reader_t reader_station = create_reader_default(DATASET_PATH_STATIONS);
+    csv_reader_t reader_car = create_reader_default(DATASET_PATH_CARS);
+    station_t stations[DATASET_STATIONS_LINES];
+    car_t cars[DATASET_CARS_LINES];
+    parse_to_station(&reader_station, stations);
+    parse_to_car(&reader_car, cars);
+
+    for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
+        if (strcmp(stations[i].name, dataUser.borne_depart) == 0) {
+            data_algo->borne_depart = (station_t*) malloc(sizeof(station_t));
+            data_algo->borne_depart->name = (char*) malloc(sizeof(char)*strlen(stations[i].name)+1);
+            strcpy(data_algo->borne_depart->name,stations[i].name);
+            data_algo->borne_depart->id = stations[i].id;
+            data_algo->borne_depart->latitude = stations[i].latitude;
+            data_algo->borne_depart->longitude = stations[i].longitude;
+            data_algo->borne_depart->capacity = stations[i].capacity;
+            data_algo->borne_depart->is_free = stations[i].is_free;
+            data_algo->borne_depart->power = stations[i].power;
+        }
+        if (strcmp(stations[i].name, dataUser.borne_arrivee) == 0) {
+            data_algo->borne_arrivee = (station_t*) malloc(sizeof(station_t));
+            data_algo->borne_arrivee->name = (char*) malloc(sizeof(char)*strlen(stations[i].name)+1);
+            strcpy(data_algo->borne_arrivee->name,stations[i].name);
+            data_algo->borne_arrivee->id = stations[i].id;
+            data_algo->borne_arrivee->latitude = stations[i].latitude;
+            data_algo->borne_arrivee->longitude = stations[i].longitude;
+            data_algo->borne_arrivee->capacity = stations[i].capacity;
+            data_algo->borne_arrivee->is_free = stations[i].is_free;
+            data_algo->borne_arrivee->power = stations[i].power;
+        }
+    }
+    
+    for(int j = 0; j < DATASET_CARS_LINES; j++){
+        if(strcmp(cars[j].name, dataUser.vehicule) == 0){
+            data_algo->vehicule = (car_t*) malloc(sizeof(car_t));
+            data_algo->vehicule->name = (char*) malloc(sizeof(char)*strlen(cars[j].name)+1);
+            strcpy(data_algo->vehicule->name,cars[j].name);
+            data_algo->vehicule->range = cars[j].range;
+            data_algo->vehicule->battery = cars[j].battery;
+            data_algo->vehicule->consumption = cars[j].consumption;
+        }
+    }
     data_algo->current_bat = atof(data->current_bat)/100;
     data_algo->max_bat = atof(data->max_bat)/100;
     data_algo->min_bat = atof(data->min_bat)/100;
@@ -436,6 +487,8 @@ data_algo_t* normalize_data(Data *data){
     } else {
         data_algo->payant = false;
     }
+    free_parsed_car(cars);
+    free_parsed_station(stations);
     return data_algo;
 }
 
@@ -454,7 +507,6 @@ void draw_line(cairo_t *cr, double x1, double y1, double x2, double y2) {
     cairo_move_to(cr, x1, y1);
     cairo_line_to(cr, x2, y2);
     cairo_stroke(cr);
-    g_print("Ligne de (%f,%f) à (%f,%f)\n", x1, y1, x2, y2);
 }
 
 /**
@@ -482,6 +534,8 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
     // Dessiner les stations
     int radius;
+    int id_dep = -1;
+    int id_arr = -1;
     for (int i = 0; i < DATASET_STATIONS_LINES; i++){
             //contour noir
             radius = 3;
@@ -496,57 +550,63 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
     }
     for (int i = 0; i < DATASET_STATIONS_LINES; i++){
         if (dataUser.borne_depart != NULL && strcmp(stations[i].name, dataUser.borne_depart) == 0){
-            //contour noir
-            radius = 6;
-            cairo_set_source_rgb(cr, 0, 0, 0);
-            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
-            //remplissage vert
-            radius = 5;
-            cairo_set_source_rgb(cr, 0, 1, 0);
-            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
+            id_dep = stations[i].id;
         }else if(dataUser.borne_arrivee != NULL && strcmp(stations[i].name, dataUser.borne_arrivee) == 0){
-            //contour noir
-            radius = 6;
-            cairo_set_source_rgb(cr, 0, 0, 0);
-            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
-            //remplissage jaune
-            radius = 5;
-            cairo_set_source_rgba(cr, 1, 1, 0,1);
-            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
-            cairo_fill(cr);
+            id_arr = stations[i].id;
         }else{
             if(chemin.nbStations > 2){
                 for (int j = 1; j < chemin.nbStations - 1; j++){
                     if (chemin.stations[j]->name != NULL){
-                        g_print("station %d : %d\n", j, chemin.stations[j]->id);
-                        if ((stations[i].name, chemin.stations[j]->name) == 0){
-                        //contour bleu
-                        radius = 5;
-                        cairo_set_source_rgb(cr, 0, 0, 1);
-                        cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
-                        cairo_fill(cr);
+                        if (strcmp(stations[i].name, chemin.stations[j]->name) == 0){
+                            //contour noir
+                            radius = 6;
+                            cairo_set_source_rgb(cr, 0, 0, 0);
+                            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+                            cairo_fill(cr);
+                            //contour bleu
+                            radius = 5;
+                            cairo_set_source_rgb(cr, 0, 0, 1);
+                            cairo_arc(cr, stations[i].longitude*3000 + 300, 2700 - stations[i].latitude*3000, radius, 0, 2 * G_PI);
+                            cairo_fill(cr);
                         }
-                    }else{
-                        g_print("station %d : NULL\n", j);
                     }
                 }
             }
         }
-    }/*
+    }
+    if(id_dep != -1){
+        //contour noir
+        radius = 6;
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_arc(cr, stations[id_dep].longitude*3000 + 300, 2700 - stations[id_dep].latitude*3000, radius, 0, 2 * G_PI);
+        cairo_fill(cr);
+        //remplissage vert
+        radius = 5;
+        cairo_set_source_rgb(cr, 0, 1, 0);
+        cairo_arc(cr, stations[id_dep].longitude*3000 + 300, 2700 - stations[id_dep].latitude*3000, radius, 0, 2 * G_PI);
+        cairo_fill(cr);
+    }
+    if (id_arr != -1){
+        //contour noir
+        radius = 6;
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_arc(cr, stations[id_arr].longitude*3000 + 300, 2700 - stations[id_arr].latitude*3000, radius, 0, 2 * G_PI);
+        cairo_fill(cr);
+        //remplissage jaune
+        radius = 5;
+        cairo_set_source_rgba(cr, 1, 1, 0,1);
+        cairo_arc(cr, stations[id_arr].longitude*3000 + 300, 2700 - stations[id_arr].latitude*3000, radius, 0, 2 * G_PI);
+        cairo_fill(cr);
+    }
     cairo_set_source_rgb(cr, 0, 0, 1);
+    double x1, y1, x2, y2;
     for(int i = 0; i < chemin.nbStations-1; i++){
-        g_print("station %d : %f %f\n", i,chemin.stations[i]->longitude,chemin.stations[i]->latitude);
-        g_print("station %d+1 : %f %f\n", i,chemin.stations[i+1]->longitude,chemin.stations[i+1]->latitude);
-        double x1 = chemin.stations[i]->longitude*3000 + 300;
-        double y1 = 2700 - chemin.stations[i]->latitude*3000;
-        double x2 = chemin.stations[i+1]->longitude*3000 + 300;
-        double y2 = 2700 - chemin.stations[i+1]->latitude*3000;
-        g_print("Ligne de (%f,%f) à (%f,%f)\n", x1, y1, x2, y2);
+        x1 = chemin.stations[i]->longitude*3000 + 300;
+        y1 = 2700 - chemin.stations[i]->latitude*3000;
+        x2 = chemin.stations[i+1]->longitude*3000 + 300;
+        y2 = 2700 - chemin.stations[i+1]->latitude*3000;
         draw_line(cr, x1, y1, x2, y2);
-    }*/
+    }
     free_parsed_station(stations);
     return TRUE;
 }
@@ -562,7 +622,7 @@ gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
  * @param to_print le tableau de chaines de caractères à afficher
  * @param is_station booléen qui indique si on affiche des stations ou des voitures
 */
-update_labels_after_research(int nb_valide, WD* wd, char** to_print, bool is_station){
+void update_labels_after_research(int nb_valide, WD* wd, char** to_print, bool is_station){
     GtkLabel *label1, *label2, *label3, *label4, *label5;
     GtkButton *button1, *button2, *button3, *button4, *button5;
     
@@ -595,62 +655,62 @@ update_labels_after_research(int nb_valide, WD* wd, char** to_print, bool is_sta
     switch (nb_valide)
     {
     case 0:
-        gtk_label_set_text(label1, "Aucun résultat");gtk_widget_hide(button1);
-        gtk_label_set_text(label2, "");gtk_widget_hide(button2);
-        gtk_label_set_text(label3, "");gtk_widget_hide(button3);
-        gtk_label_set_text(label4, "");gtk_widget_hide(button4);
-        gtk_label_set_text(label5, "");gtk_widget_hide(button5);
+        gtk_label_set_text(label1, "Aucun résultat");gtk_widget_hide(GTK_WIDGET(button1));
+        gtk_label_set_text(label2, "");gtk_widget_hide(GTK_WIDGET(button2));
+        gtk_label_set_text(label3, "");gtk_widget_hide(GTK_WIDGET(button3));
+        gtk_label_set_text(label4, "");gtk_widget_hide(GTK_WIDGET(button4));
+        gtk_label_set_text(label5, "");gtk_widget_hide(GTK_WIDGET(button5));
         break;
     case 1:
         //affichage chaine de caractères
-        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(button1);
-        gtk_label_set_text(label2, "Pas d'autres résultats");gtk_widget_hide(button2);
-        gtk_label_set_text(label3, "");gtk_widget_hide(button3);
-        gtk_label_set_text(label4, "");gtk_widget_hide(button4);
-        gtk_label_set_text(label5, "");gtk_widget_hide(button5);
+        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(GTK_WIDGET(button1));
+        gtk_label_set_text(label2, "Pas d'autres résultats");gtk_widget_hide(GTK_WIDGET(button2));
+        gtk_label_set_text(label3, "");gtk_widget_hide(GTK_WIDGET(button3));
+        gtk_label_set_text(label4, "");gtk_widget_hide(GTK_WIDGET(button4));
+        gtk_label_set_text(label5, "");gtk_widget_hide(GTK_WIDGET(button5));
 
         break;
     case 2:
        //affichage chaine de caractères
-        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(button1);
-        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(button2);
-        gtk_label_set_text(label3, "Pas d'autres résultats");gtk_widget_hide(button3);
-        gtk_label_set_text(label4, "");gtk_widget_hide(button4);
-        gtk_label_set_text(label5, "");gtk_widget_hide(button5);
+        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(GTK_WIDGET(button1));
+        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(GTK_WIDGET(button2));
+        gtk_label_set_text(label3, "Pas d'autres résultats");gtk_widget_hide(GTK_WIDGET(button3));
+        gtk_label_set_text(label4, "");gtk_widget_hide(GTK_WIDGET(button4));
+        gtk_label_set_text(label5, "");gtk_widget_hide(GTK_WIDGET(button5));
         break;
     case 3:
         //affichage chaine de caractères
-        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(button1);
-        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(button2);
-        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(button3);
-        gtk_label_set_text(label4, "Pas d'autres résultats");gtk_widget_hide(button4);
-        gtk_label_set_text(label5, "");gtk_widget_hide(button5);
+        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(GTK_WIDGET(button1));
+        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(GTK_WIDGET(button2));
+        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(GTK_WIDGET(button3));
+        gtk_label_set_text(label4, "Pas d'autres résultats");gtk_widget_hide(GTK_WIDGET(button4));
+        gtk_label_set_text(label5, "");gtk_widget_hide(GTK_WIDGET(button5));
         break;
     case 4:
         //affichage chaine de caractères
-        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(button1);
-        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(button2);
-        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(button3);
-        gtk_label_set_text(label4, to_line(to_print[3],nb_carac));gtk_widget_show(button4);
-        gtk_label_set_text(label5, "Pas d'autres résultats");gtk_widget_hide(button5);
+        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(GTK_WIDGET(button1));
+        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(GTK_WIDGET(button2));
+        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(GTK_WIDGET(button3));
+        gtk_label_set_text(label4, to_line(to_print[3],nb_carac));gtk_widget_show(GTK_WIDGET(button4));
+        gtk_label_set_text(label5, "Pas d'autres résultats");gtk_widget_hide(GTK_WIDGET(button5));
         break;
     case 5:
         //affichage chaine de caractères
-        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(button1);
-        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(button2);
-        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(button3);
-        gtk_label_set_text(label4, to_line(to_print[3],nb_carac));gtk_widget_show(button4);
-        gtk_label_set_text(label5, to_line(to_print[4],nb_carac));gtk_widget_show(button5);
+        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(GTK_WIDGET(button1));
+        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(GTK_WIDGET(button2));
+        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(GTK_WIDGET(button3));
+        gtk_label_set_text(label4, to_line(to_print[3],nb_carac));gtk_widget_show(GTK_WIDGET(button4));
+        gtk_label_set_text(label5, to_line(to_print[4],nb_carac));gtk_widget_show(GTK_WIDGET(button5));
         break;
     default:
         //affichage chaine de caractères
-        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(button1);
-        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(button2);
-        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(button3);
-        gtk_label_set_text(label4, to_line(to_print[3],nb_carac));gtk_widget_show(button4);
+        gtk_label_set_text(label1, to_line(to_print[0],nb_carac));gtk_widget_show(GTK_WIDGET(button1));
+        gtk_label_set_text(label2, to_line(to_print[1],nb_carac));gtk_widget_show(GTK_WIDGET(button2));
+        gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(GTK_WIDGET(button3));
+        gtk_label_set_text(label4, to_line(to_print[3],nb_carac));gtk_widget_show(GTK_WIDGET(button4));
         char* txt5 = malloc(sizeof(char) * 100);
         sprintf(txt5, "et %d stations supplémentaires ...", nb_valide - 4);
-        gtk_label_set_text(label5, txt5);gtk_widget_hide(button5);
+        gtk_label_set_text(label5, txt5);gtk_widget_hide(GTK_WIDGET(button5));
         break;
     }
 
@@ -738,14 +798,16 @@ void on_use_station_clicked(GtkWidget *widget, gpointer data){
     GtkLabel *label = GTK_LABEL (first_child);
 
     if (strcmp(dataUser.borne_depart, "--") == 0){
-            dataUser.borne_depart = gtk_label_get_text(label);
+            strcpy(dataUser.borne_depart, (char*)gtk_label_get_text(label));
     }else if (strcmp(dataUser.borne_arrivee, "--") == 0){
-            dataUser.borne_arrivee = gtk_label_get_text(label);
+            strcpy(dataUser.borne_arrivee, (char*)gtk_label_get_text(label));
     }else{
-            dataUser.borne_depart = gtk_label_get_text(label);
-            dataUser.borne_arrivee = "--";
+            strcpy(dataUser.borne_depart, (char*)gtk_label_get_text(label));
+            strcpy(dataUser.borne_arrivee, "--");
+            chemin.nbStations = 0; // On réinitialise le chemin
     }
     update_option_display(wd);
+    gtk_widget_queue_draw(wd->fm_drawing_area);
     g_list_free(children);
 }
 
@@ -760,7 +822,7 @@ void on_use_car_clicked(GtkWidget *widget, gpointer data){
     GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
     GtkWidget *first_child = GTK_WIDGET(children->data);
     GtkLabel *label = GTK_LABEL (first_child);
-    dataUser.vehicule = gtk_label_get_text(label);
+    dataUser.vehicule = (char*)gtk_label_get_text(label);
     update_option_display(wd);
     g_list_free(children);
 }
@@ -801,60 +863,57 @@ void on_ou_button_clicked(GtkWidget *widget, gpointer data){
 void on_od_button_clicked(GtkWidget *widget, gpointer data){
     WD *wd = (WD *) data;
     GtkWidget *drawing_area = GTK_WIDGET(wd->fm_drawing_area);
+    GtkButton *button = GTK_BUTTON(widget);
 
     data_algo_t* data_algo = normalize_data(&dataUser);
-    station_t* station_depart = malloc(sizeof(station_t));
-    station_t *station_arrivee = malloc(sizeof(station_t));
-    car_t *car = malloc(sizeof(car_t));
 
     csv_reader_t reader_station = create_reader_default(DATASET_PATH_STATIONS);
-    csv_reader_t reader_car = create_reader_default(DATASET_PATH_CARS);
     station_t stations[DATASET_STATIONS_LINES];
-    car_t cars[DATASET_CARS_LINES];
     parse_to_station(&reader_station, stations);
-    parse_to_car(&reader_car, cars);
-
-    for (int i = 0; i < DATASET_STATIONS_LINES; i++) {
-        if (strcmp(stations[i].name, dataUser.borne_depart) == 0) {
-            station_depart = &stations[i];
-        }
-        if (strcmp(stations[i].name, dataUser.borne_arrivee) == 0) {
-           station_arrivee = &stations[i];
-        }
-    }
-
-    for(int j = 0; j < DATASET_CARS_LINES; j++){
-        if(strcmp(cars[j].name, dataUser.vehicule) == 0){
-            car = &cars[j];
-        }
-    }
-
+    
     if(strcmp(dataUser.borne_depart, "--") == 0 || strcmp(dataUser.borne_arrivee, "--") == 0 || strcmp(dataUser.vehicule, "--") == 0){
         GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(wd->window), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Veuillez sélectionner une station de départ, une station d'arrivée et un véhicule");
         gtk_dialog_run(GTK_DIALOG(dialog));
         gtk_widget_destroy(dialog);
     }else{
         station_t** path = path_generation(stations, DATASET_STATIONS_LINES, data_algo);
-        g_print("path : %s\n", path_to_string(path, path_size(path, *station_arrivee)));
         if(path == NULL){
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(wd->window), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Aucun chemin trouvé");
             gtk_dialog_run(GTK_DIALOG(dialog));
             gtk_widget_destroy(dialog);
         }else{
-            chemin.stations = path;
-            chemin.nbStations = path_size(path, *station_arrivee);
-            for (int i = 0; i < chemin.nbStations; i++) {
-                g_print ("station id : %d, ",chemin.stations[i]->id);
-                g_print("name : %s\n", chemin.stations[i]->name);
-                g_print("   longitude : %f, ", chemin.stations[i]->longitude);
-                g_print("latitude : %f\n", chemin.stations[i]->latitude);
+            int size = path_size(path, *data_algo->borne_arrivee);
+            chemin.stations = (station_t**) realloc(chemin.stations,sizeof(station_t*) * size);
+            chemin.nbStations = size;
+            for (int i = 0; i < chemin.nbStations; i++) {      
+                chemin.stations[i] = malloc(sizeof(station_t));
+                chemin.stations[i]->id = path[i]->id;
+                chemin.stations[i]->name = malloc(sizeof(char) * (strlen(path[i]->name) + 1));
+                strcpy(chemin.stations[i]->name, path[i]->name);
+                chemin.stations[i]->longitude = path[i]->longitude;
+                chemin.stations[i]->latitude = path[i]->latitude;
+                chemin.stations[i]->capacity = path[i]->capacity;
+                chemin.stations[i]->power = path[i]->power;
+                chemin.stations[i]->is_free = path[i]->is_free;
             }
             gtk_widget_queue_draw(drawing_area);
         }
     }
-    free_parsed_car(cars);
     free_parsed_station(stations);
 }
+
+void delete_app(GtkWidget *widget, gpointer data){
+    free(dataUser.borne_depart);
+    free(dataUser.borne_arrivee);
+    free(dataUser.vehicule);
+    for (int i = 0; i < chemin.nbStations; i++) {
+        free(chemin.stations[i]->name);
+        free(chemin.stations[i]);
+    }
+    free(chemin.stations);
+    gtk_main_quit();
+}
+
 // -------------------------------------- FIN FONCTIONS DE GESTION DES SIGNAUX -------------------------------------- //
 //                                                                                                                    //
 // ------------------------------------- FONCTIONS DE CONNEXION ET D'AFFICHAGE -------------------------------------- //
@@ -916,6 +975,6 @@ int main(int argc, char *argv[]) {
     gtk_container_add(GTK_CONTAINER(wd->window), wd->grid_principal);
     gtk_widget_show_all(wd->window);
     widget_to_hide(wd);
-    g_signal_connect(wd->window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(wd->window, "delete-event", G_CALLBACK(delete_app), NULL);
     gtk_main();
 }
