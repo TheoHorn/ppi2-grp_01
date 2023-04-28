@@ -7,7 +7,7 @@
 
 #define VITESSE 100 // km/h
 
-void current_position(station_t stations[], int nbStations, car_t car[], int nbCars, int nb_simulations, int nb_minutes){
+void current_position(station_t stations[], int nbStations, car_t car[], int nb_simulations, int nb_minutes){
 
     // we can change the parameters of the simulation
     int *param_cars = (int*)malloc(sizeof(int)*nb_simulations);
@@ -16,7 +16,7 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
 
     for(int i=0; i<nb_simulations;i++){
         param_cars[i] = i;
-        param_departures[i] = 5;
+        param_departures[i] = 2;
         param_arrivals[i] = 500;
     }
 
@@ -25,12 +25,25 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
 
     // we simulate the position of all the cars
     for(int i=0; i<nb_simulations;i++){
+
         int voiture = param_cars[i];
         int depart = param_departures[i];
         int arrivee = param_arrivals[i];
 
-        station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], nbStations, &car[voiture]);
+        data_algo_t* params = (data_algo_t*)malloc(sizeof(data_algo_t));
+        params->borne_depart = &stations[depart];
+        params->borne_arrivee = &stations[arrivee];
+        params->vehicule = &car[voiture];
+        params->min_bat = 0.2;
+        params->max_bat = 0.8;
+        params->current_bat = 0.5;
+        params->tps_recharge = 0.5;
+        params->payant = false;
+
+        station_t** path = path_generation(stations,nbStations,params);
         int path_lenght = path_size(path, stations[arrivee]);
+
+        //print_path(path, path_lenght);
 
         int km = 10*VITESSE/60;
         int add_time = 0;
@@ -47,7 +60,9 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
 
             // case car at a station
             if(nb_minutes>add_time && nb_minutes<add_time+time_to_charge){
-                add_car_to_station(&stations[path[j+1]->id], &car[voiture]);
+                if(path[j+1]->id != arrivee){
+                    add_car_to_station(&stations[path[j+1]->id], &car[voiture]);
+                }
                 break;
             }
             // case car on the road
@@ -57,6 +72,7 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
             add_time += time_to_charge;
         }        
         free(path);
+        free(params);
     }    
     free_parameters(param_cars, param_departures, param_arrivals);
 }
@@ -82,10 +98,10 @@ void free_parameters(int* param_cars, int* param_departures, int* param_arrivals
 
 void print_charge_stations(station_t stations[], int nbStations){
     for(int i=0; i<nbStations;i++){
-        if(stations[i].num_cars_charging>0){
-            printf("\nCharge stations %d : %d", i, stations[i].num_cars_charging);
+        if(stations[i].num_cars_charging>stations[i].capacity){
+            printf("\nCharge stations %d : %d [full]", i, stations[i].num_cars_charging);
             if(stations[i].car_queue != NULL){
-                display_queue(stations[i].car_queue);
+                //display_queue(stations[i].car_queue);
                 destroy_queue(stations[i].car_queue);
             }
         }
@@ -123,7 +139,7 @@ void destroy_queue(list_car_t* queue){
 
 void display_queue(list_car_t* queue){
     list_car_t* aux = queue;
-    printf(" [full] pending cars : ");
+    printf(" pending cars : ");
     while(aux != NULL){
         printf("%s, ", aux->car->name);
         aux = aux->next;
