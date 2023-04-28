@@ -18,7 +18,7 @@ typedef struct station_t {
     int capacity; // capacity maximum of the station
     int power; // power of the station in kW
     bool is_free; // is the station free
-    int num_cars_charging; // number of cars charging
+    int num_cars_charging; // number of cars at station
     list_car_t *car_queue; // queue of cars waiting to charge
 } station_t ;
 

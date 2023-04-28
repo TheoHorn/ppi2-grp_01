@@ -9,19 +9,19 @@
 
 void current_position(station_t stations[], int nbStations, car_t car[], int nbCars, int nb_simulations, int nb_minutes){
 
+    // we can change the parameters of the simulation
     int *param_cars = (int*)malloc(sizeof(int)*nb_simulations);
     int *param_departures = (int*)malloc(sizeof(int)*nb_simulations);
     int *param_arrivals = (int*)malloc(sizeof(int)*nb_simulations);
 
     for(int i=0; i<nb_simulations;i++){
         param_cars[i] = i;
-        param_departures[i] = i;
-        param_arrivals[i] = 152;
+        param_departures[i] = 5;
+        param_arrivals[i] = 500;
     }
 
     // discretization of the time
     nb_minutes = nb_minutes/10;
-    bool arrived = true;
 
     // we simulate the position of all the cars
     for(int i=0; i<nb_simulations;i++){
@@ -32,12 +32,8 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
         station_t** path = path_generation(stations, &stations[depart], &stations[arrivee], nbStations, &car[voiture]);
         int path_lenght = path_size(path, stations[arrivee]);
 
-        //print_path(path, path_lenght);
-
         int km = 10*VITESSE/60;
-
         int add_time = 0;
-        arrived = true;
 
         for(int j = 0; j < path_lenght - 1; j++){
             // number of stops between two stations
@@ -48,11 +44,6 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
             double time_to_charge = (energy_used / stations[j+1].power) * 60;
 
             time_to_charge = round(time_to_charge) / 10;
-
-            // case car arrived
-            if(nb_minutes>add_time && path[j+1]->id == arrivee){
-                    break;
-            }
 
             // case car at a station
             if(nb_minutes>add_time && nb_minutes<add_time+time_to_charge){
@@ -66,22 +57,19 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nbC
             add_time += time_to_charge;
         }        
         free(path);
-    }
-    printf("\nAt %d minutes :", nb_minutes*10);
-    
+    }    
     free_parameters(param_cars, param_departures, param_arrivals);
 }
 
 void add_car_to_station(station_t* station, car_t* car){
-    if(station->num_cars_charging == station->capacity){
+    if(station->num_cars_charging >= station->capacity){
         if(station->car_queue == NULL){
             create_queue_car(station, car);
         } else{
-            //add_car_to_queue(station, car);
+            add_car_to_queue(station, car);
         }        
-    } else{
-        station->num_cars_charging += 1;
     }
+    station->num_cars_charging += 1;
     return;
 }
 
@@ -135,10 +123,9 @@ void destroy_queue(list_car_t* queue){
 
 void display_queue(list_car_t* queue){
     list_car_t* aux = queue;
-    printf(" (full) --> Queue : ");
+    printf(" [full] pending cars : ");
     while(aux != NULL){
         printf("%s, ", aux->car->name);
         aux = aux->next;
     }
-    printf("\n");
 }
