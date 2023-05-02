@@ -71,7 +71,7 @@ dijkstra_test: src/test/dijkstra_test.c src/dijkstra.o src/station.o src/utils/p
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 astar_test: src/test/astar_test.c src/astar.o src/station.o src/utils/parser_csv.o src/station_node_priority_queue.o
-	$(MAKE) station.o parser_csv.o astar.o
+	$(MAKE) station.o parser_csv.o astar.o station_node_priority_queue.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 #  --- Performances tests ---
@@ -85,32 +85,36 @@ degree_of_station_test: src/test/performances/degree_of_station.c src/station.o 
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 astar_perf : src/test/performances/astar_perf.c src/astar.o src/station.o src/utils/parser_csv.o src/station_node_priority_queue.o
-	$(MAKE) station.o parser_csv.o astar.o
+	$(MAKE) station.o parser_csv.o astar.o station_node_priority_queue.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 #  -----------------
 
 #  --- Graphics Tests ---
 search_button_test: src/test/search_button_test.c src/graphics/search_button.o src/station.o src/utils/parser_csv.o
+	$(MAKE) search_button.o parser_csv.o station.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 france_map_test: src/test/france_map_test.c src/graphics/france_map.o src/station.o src/utils/parser_csv.o
+	$(MAKE) france_map.o parser_csv.o station.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 option_display_test: src/test/option_display_test.c src/graphics/option_display.o src/station.o src/utils/parser_csv.o
+	$(MAKE) option_display.o parser_csv.o station.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 options_user_test: src/test/options_user_test.c src/graphics/options_user.o src/station.o src/utils/parser_csv.o
+	$(MAKE) options_user.o parser_csv.o station.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o src/astar.o src/station_node_priority_queue.o
-	$(MAKE) station.o parser_csv.o
+	$(MAKE) station.o parser_csv.o astar.o station_node_priority_queue.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 #   -------
 
 simulation_test: src/test/simulation_test.c src/simulation.o src/astar.o src/station.o src/utils/parser_csv.o src/station_node_priority_queue.o
-	$(MAKE) station.o parser_csv.o astar.o simulation.o
+	$(MAKE) station.o parser_csv.o astar.o simulation.o station_node_priority_queue.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 clean:
