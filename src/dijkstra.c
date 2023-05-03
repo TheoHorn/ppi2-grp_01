@@ -1,7 +1,6 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "station.h"
 #include "dijkstra.h"
@@ -52,7 +51,7 @@ int dijkstra(station_t depart, station_t arrivee, station_t *stations, int nbSta
 void updateNeighbors(station_t* station, int* voisines, int* distances, station_t* stations, int* predecessors){
     int i = 0;
     while(voisines[i] != -1){
-        int d = distance(station,&stations[voisines[i]]);
+        int d = (int) lround(distance(station,&stations[voisines[i]]));
         if(distances[station->id] != ININITY) d = d + distances[station->id];
         
         if(d < distances[voisines[i]]){
@@ -68,7 +67,7 @@ int *adjacentStations(station_t* station, int* visited, int distanceMax, station
     int nbVoisines = 0;
     for(int i = 0; i < nbStations; i++){
         if(i != station->id){
-            int d = distance(station, &stations[i]);
+            int d = (int) lround(distance(station, &stations[i]));
             if(d<=distanceMax && visited[i] == 0){
                 voisines[nbVoisines] = i;
                 nbVoisines++;
@@ -121,7 +120,7 @@ int decreaseNumberStations(station_t* stations ,int*path, int*newPath, int lengt
     int currentDistance = 0;
     newPath[c] = currentStation;
     for(int i = length-1; i >= 0; i--){
-        currentDistance += distance(&stations[currentStation], &stations[path[i]]);
+        currentDistance += (int) lround(distance(&stations[currentStation], &stations[path[i]]));
         if(currentDistance > autonomy){
             c++;
             newPath[c] = path[i+1];

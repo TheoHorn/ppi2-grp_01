@@ -50,7 +50,7 @@ void current_position(station_t stations[], int nbStations, car_t car[], int nb_
 
         for(int j = 0; j < path_lenght - 1; j++){
             // number of stops between two stations
-            int current_distance = distance(path[j], path[j+1]);
+            int current_distance = (int) lround(distance(path[j], path[j+1]));
             add_time += (int)current_distance/km;
 
             double energy_used = (car->consumption * current_distance)/1000;

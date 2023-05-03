@@ -23,6 +23,6 @@ typedef struct station_t {
 } station_t ;
 
 // return the distance between two station in km
-int distance(station_t *station1, station_t *station2);
+double distance(station_t *station1, station_t *station2);
 
 #endif
