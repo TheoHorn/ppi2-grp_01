@@ -18,8 +18,8 @@ int current_position(station_t stations[], int nbStations, car_t car[], int nb_s
 
     for(int i=0; i<nb_simulations;i++){
         param_cars[i] = i;
-        param_departures[i] = 2;
-        param_arrivals[i] = 500;
+        param_departures[i] = 119;
+        param_arrivals[i] = 120;
         state_car[i] = -1;
     }
 
@@ -45,7 +45,7 @@ int current_position(station_t stations[], int nbStations, car_t car[], int nb_s
 
         station_t** path = path_generation(stations,nbStations,params);
         int path_lenght = path_size(path, stations[arrivee]);
-
+        
         int km = 10*VITESSE/60;
         int add_time = 0;
 

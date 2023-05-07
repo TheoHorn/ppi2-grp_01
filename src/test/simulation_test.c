@@ -8,7 +8,7 @@ int main()
 {
     clock_t t=0;
 
-    int nb_simulations = 20; // nb cars
+    int nb_simulations = 15; // nb cars
     int nb_minutes = 1000; // each 10 minutes until nb_minutes
 
     printf("Charging rate of stations for %d cars (in 10 minute steps)",nb_simulations);
