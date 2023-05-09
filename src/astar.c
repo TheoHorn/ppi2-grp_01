@@ -4,8 +4,8 @@
 #include <math.h>
 #include <string.h>
 
-# define DEBUG_PRINT false
-# define CLOSED_LIST_SIZE_MAX 400
+# define DEBUG_PRINT true
+# define CLOSED_LIST_SIZE_MAX 200
 
 // Generate a fast path from the starting station to the last station
 station_t** path_generation(station_t stations[], int nbstations, data_algo_t *params){
@@ -38,12 +38,14 @@ station_t** path_generation(station_t stations[], int nbstations, data_algo_t *p
         printf("-----------------------------------------------\n");
         printf("Tested node : %d : %s\n", node->station->id, node->station->name);
         print_queue(openList);
+        printf("size_queue : %d\n", size_queue(openList));
         printf("Size of closed list : %d\n", size_queue(closedList));
         printf("-----------------------------------------------\n\n");
         #endif
 
         // If the last station is in the open list, we have found the path
         if(node->station->id == last_station->id){ 
+            //printf("Open list root id : %d", openList->value->station->id);
             free_queue(&openList);
             station_t **path = reconstruct_path(node);
             //free(node);
@@ -117,7 +119,7 @@ station_node **adjacentStations(station_t stations[], station_node *node, int nb
 
 // Calculate an heuristic for the A* algorithm
 double calculate_heuristic(station_node *node, station_t *goal) {
-    return node->cost +  1.5 * distance(node->station, goal);
+    return node->cost +  1.1 * distance(node->station, goal);
 }
 
 

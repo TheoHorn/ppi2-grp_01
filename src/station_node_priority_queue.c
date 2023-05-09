@@ -4,17 +4,16 @@
 #include "station_node_priority_queue.h"
 
 # define DEBUG_MODE false
-# define DEBUG_PRINT false
-# define DEBUG_STATION_ID 6
+# define DEBUG_PRINT true
+# define DEBUG_STATION_ID 1
 
-// Create a root from the queue and return it
+// Create the root of the queue and return it
 station_node_queue *create_queue(){
     station_node_queue *tmp = malloc(sizeof(station_node_queue));
     tmp->value = NULL;
     tmp->left = NULL;
     tmp->right = NULL;
     tmp->parent = NULL;
-    tmp->color = BLACK;
     return tmp;
 }
 
@@ -30,491 +29,201 @@ station_node* create_station_node(station_t *station, double cost, double heuris
     return node;
 }
 
-// Returns the parent of the node
-station_node_queue *parent(station_node_queue *node){
-    return node->parent;
-}
-
-// Returns the grandparent of the node
-station_node_queue* grandparent(station_node_queue *node){
-    if(node != NULL && node->parent != NULL){
-        return node->parent->parent;
+// Returns the height of the tree
+int tree_height(station_node_queue *root){
+    if(root == NULL){
+        return 0;
+    }
+    else if (root->left == NULL && root->right == NULL){
+        return 1;
     }
     else{
-        return NULL;
-    }
-}
-
-// Returns the sibling of the node
-station_node_queue* sibling(station_node_queue *node){
-    if(node != NULL && node->parent != NULL){
-        if(node == node->parent->left){
-            return node->parent->right;
+        int left_height = tree_height(root->left);
+        int right_height = tree_height(root->right);
+        if(left_height > right_height){
+            return left_height + 1;
         }
         else{
-            return node->parent->left;
+            return right_height + 1;
         }
-    }
-    else{
-        return NULL;
     }
 }
 
-// Returns the uncle of the node
-station_node_queue* uncle(station_node_queue *node){
-    if(node != NULL && node->parent != NULL){
-        return sibling(node->parent);
+// Returns the balance of the tree
+int get_balance(station_node_queue *root){
+    if(root == NULL){
+        return 0;
     }
     else{
-        return NULL;
+        int tmp = abs(tree_height(root->left)) - abs(tree_height(root->right));
+        printf("Balance on %d : %d\n", root->value->station->id, tmp);
+        return tmp;
     }
 }
 
 // Rotate the tree to the left
 station_node_queue* left_rotate(station_node_queue *node){
+    printf("left rotate on %d\n", node->value->station->id);
     station_node_queue *x = node;
     station_node_queue *y = node->right;
-    x->right = y->left;
-    if(y->left != NULL && (y->left->left != NULL || y->left->right != NULL)){
-        y->left->parent = x;
-    }
     y->parent = x->parent;
-
-    if(x->parent == NULL){
-        x = y;
-    }
-    else if(x == x->parent->left){
+    if(x->parent == NULL){}
+    else if(x->parent->left == x){
         x->parent->left = y;
+    } 
+    else{
+         x->parent->right = y;
+    }
+
+    if(y->left == NULL){
+        y->left = x;
+        x->right = NULL;
     }
     else{
-        x->parent->right = y;
+        x->right = y->left;
+        y->left->parent = x;
+        y->left = x;
     }
-
-    y->left = x;
     x->parent = y;
-    return x;
+    printf("left rotate on %d done\n", node->value->station->id);
+    return y;
 }   
 
 // Rotate the tree to the right
 station_node_queue* right_rotate(station_node_queue *node){
+    printf("right rotate on %d\n", node->value->station->id);
     station_node_queue *x = node;
     station_node_queue *y = node->left;
-    x->left = y->right;
-
-    if(y->right != NULL && (y->right->left != NULL || y->right->right != NULL)){
-        y->right->parent = x;
-    }
- 
     y->parent = x->parent;
-    if (x->parent == NULL){
-        x = y;
-    }
-    else if (x == x->parent->right){
-        x->parent->right = y;
-    }  
-    else{
+    if(x->parent == NULL){}
+    else if(x->parent->left == x){
         x->parent->left = y;
     }
-    
-    y->right = x;
+    else{
+        x->parent->right = y;
+    }
+       
+    if(y->right == NULL){
+        y->right = x;
+        x->left = NULL;
+        x->parent = y;
+    }
+    else{
+        x->left = y->right;
+        y->right->parent = x;
+        y->right = x;
+    }  
     x->parent = y;
-    return x;
+    return y;
+}
+
+station_node_queue * rotate_tree(station_node_queue *root){
+    int balance = get_balance(root);
+    int balance_right = get_balance(root->right);
+    int balance_left = get_balance(root->left);
+
+    // Simple left rotation
+    if(balance == -2 && balance_right == -1)
+        return left_rotate(root);
+    // Simple right rotation
+    else if(balance == 2 && balance_left == 1)
+        return right_rotate(root);
+    // Double right left rotation
+    else if(balance == -2 && balance_right == 1){
+        right_rotate(root->right);
+        return left_rotate(root);
+    }
+    // double left right rotation
+    else if(balance == 2 && balance_left == -1){
+        left_rotate(root->left);
+        return right_rotate(root);
+    }
+    return root;
 }
 
 // Remove a node from the queue
-void remove_from_queue(station_node_queue **root, station_node *value){
-    // From https://www.irif.fr/~carton/Enseignement/Algorithmique/Programmation/RedBlackTree/
-
-    # if DEBUG_PRINT
-    printf("--- Open list : ---\n");
-    printf("Node to remove %d\n", value->station->id);
-    # endif
-
-    if(*root == NULL || (*root)->value == NULL){
-        return;
+station_node_queue *remove_from_queue(station_node_queue *root, station_node *value){
+    // TODO FAIRE REMOVE FROM QUEUE
+    if(root == NULL || root->value == NULL){
+        assert(false);
+        return NULL;
     }
-    // Research of the node to remove
-    station_node_queue *node = *root;
-    while(node->value != value){
-        if(value->heuristic < node->value->heuristic){
-            if(node->left == NULL){
-                return;
+    else if((root)->value->station->id == value->station->id){
+        if(root->left == NULL && root->right == NULL){
+            if(root->parent != NULL){
+                if(root->parent->right == root)
+                    root->parent->right = NULL;
+                else if(root->parent->left == root)
+                    root->parent->left = NULL;
             }
-            node = node->left;
+
+
+            free(root);
+            root = NULL;
+        }
+        else if(root->left != NULL){
+           station_node_queue *tmp = root->left;
+            
+            if(root->parent != NULL){
+                if(root->parent->right == root)
+                    root->parent->right = tmp;
+                else if(root->parent->left == root)
+                    root->parent->left = tmp;
+            }
+
+            tmp->parent = root->parent;
+
+            free(root);
+            root = tmp;
+
+        }
+        else if(root->right != NULL){
+            station_node_queue *tmp = root->right;
+
+            if(root->parent != NULL){
+                if(root->parent->right == root)
+                    root->parent->right = tmp;
+                else if(root->parent->left == root)
+                    root->parent->left = tmp;
+            }
+
+            tmp->parent = (root)->parent;
+
+            free(root);
+            root = tmp;
         }
         else{
-            if(node->right == NULL){
-                return;
-            }
-            node = node->right;
+            station_node_queue *tmp = root->right;
+            // TODO
+            printf("Pas encore fait\n");
+            assert(false);
+
         }
     }
-
-    # if DEBUG_MODE
-    assert(node->value == value);
-    # endif
-
-
-    if(node->left == NULL && node->right == NULL){
-        // If the node has no child, we remove it from the queue
-        if(node->parent == NULL){
-            // If the node is the root, we set the root to NULL
-            # if DEBUG_PRINT
-                if(node->value->station->id == DEBUG_STATION_ID){
-                        printf("\naa\n"); // TODO delete
-                }
-            # endif
-            *root = NULL;
-        }
-        else if(node->parent->left == node){
-            // If the node is the left child of its parent, we set the left child of its parent to NULL
-            # if DEBUG_PRINT
-                if(node->value->station->id == DEBUG_STATION_ID){
-                        printf("\na\n"); // TODO delete
-                }
-            # endif
-            node->parent->left = NULL;
-        }
-        else{
-            // If the node is the right child of its parent, we set the right child of its parent to NULL
-            # if DEBUG_PRINT
-                if(node->value->station->id == DEBUG_STATION_ID){
-                        printf("\nb\n"); // TODO delete
-                }
-            # endif
-            node->parent->right = NULL;
-        }
-        free(node);
-    }
-    else if((node->left == NULL) != (node->right == NULL)){
-        // If the node has one child, we replace it by its child
-        # if DEBUG_PRINT
-            if(node->value->station->id == DEBUG_STATION_ID){
-                    printf("\nc\n"); // TODO delete
-            }
-        # endif
-        if(node->left != NULL){
-            // If the node has a left child, we replace it by its left child
-            # if DEBUG_PRINT
-                if(node->value->station->id == DEBUG_STATION_ID){
-                    printf("\nca\n"); // TODO delete
-                }
-            # endif
-
-            node->left->parent = node->parent;
-            if(node->parent == NULL){
-                // If the node is the root and has a left child, we set the root to the left child
-                # if DEBUG_PRINT
-                    if(node->value->station->id == DEBUG_STATION_ID){
-                      printf("\ncb\n"); // TODO delete
-                    }
-                # endif
-                node->value = node->left->value;
-                if(node->left->left != NULL){
-                    node->left = node->left->left;
-                }
-                if(node->left->right != NULL){
-                    node->right = node->left->right;
-                }
-            }
-            else if(node->parent->left == node){
-                // If the node is the left child of its parent, we set the left child of its parent to the left child of the node
-                # if DEBUG_PRINT
-                    if(node->value->station->id == DEBUG_STATION_ID){
-                        printf("\ncd\n"); // TODO delete
-                    }
-                # endif
-                node->parent->left = node->left;
-            }
-            else{
-                // If the node is the right child of its parent, we set the right child of its parent to the left child of the node
-                # if DEBUG_PRINT
-                    if(node->value->station->id == DEBUG_STATION_ID){
-                        printf("\nce\n"); // TODO delete
-                    }
-                # endif
-                node->parent->right = node->left;
-            }
-        }
-        else{
-           //node->right->parent = node->parent;
-            if(node->parent == NULL){
-                // If the node is the root and has a right child
-                # if DEBUG_PRINT
-                    if(node->value->station->id == DEBUG_STATION_ID){
-                        printf("\ncf\n"); // TODO delete
-                    }
-                # endif
-                node->value = node->right->value;
-                station_node_queue *tmp = node->right;
-                node->right = NULL;
-                free(tmp); // error here
-            }
-            else if(node->parent->left == node){
-                // If the node is the left child of its parent and has a right child
-                # if DEBUG_PRINT
-                    if(node->value->station->id == DEBUG_STATION_ID){
-                       printf("\ncg\n"); // TODO delete
-                    }
-                # endif
-                node->right->parent = node->parent;
-                node->parent->left = node->left;
-                
-            }
-            else if(node->parent->right == node){
-                // If the node is the right child of its parent and has a right child
-                # if DEBUG_PRINT
-                    if(node->value->station->id == DEBUG_STATION_ID){
-                        printf("\nch\n"); // TODO delete
-                        printf("parent : %d  - parent right : %d\n", node->parent->value->station->id , node->parent->right->value->station->id);
-                    }
-                # endif
-
-                node->parent->right = node->right;
-                node->right->parent = node->parent;
-                //free(node);
-            }
-            else{
-                printf("Error\n");
-                exit(1);
-            }
-        }
+    else if(value->station->id <= root->value->station->id){
+        remove_from_queue(root->left, value);
     }
     else{
-        // If the node has two children :
-        # if DEBUG_PRINT
-            if(node->value->station->id == DEBUG_STATION_ID){
-                printf("\n%d : gauche : %d - droite : %d", node->value->station->id, node->left->value->station->id, node->right->value->station->id);
-                printf("\nd\n"); // TODO delete
-            }
-        # endif
-
-        if((node->left->left != NULL || node->left->right != NULL) && (node->right->left != NULL || node->right->right != NULL)){
-            // If the node has no children as a leaf, we replace its value by the minimum node of the right subtree 
-            // or the maximum node of the left subtree
-            station_node_queue *max_left_subtree = node->left;
-            while(max_left_subtree->right != NULL){
-                max_left_subtree = max_left_subtree->right;
-            }
-            station_node *tmp = max_left_subtree->value;
-            remove_from_queue(root, max_left_subtree->value);
-            node->value = tmp;  
-        }
-        else {
-            station_node_queue *child;
-            if(node->left->left != NULL || node->left->right != NULL){
-                // If the right child is a leaf and not the left child
-                child = node->left;
-            }
-            else{
-                // If the left child is a leaf and not the right child
-                child = node->right;
-            }
-
-            if(node->color == RED){
-                // If the node is red, we can remove it without any problem
-                node->value = child->value;
-                node->left = child->left;
-                node->right = child->right;
-                free(child);
-            }
-            else if(node->color == BLACK && child->color == RED){
-                // If the node is black and its child is red, we can remove it and color its child in black
-                node->value = child->value;
-                node->left = child->left;
-                node->right = child->right;
-                free(child);
-            }
-            else{
-                // if the node is black and its child is black, there are multiple cases :
-
-                // If the node is the root, there is nothing to do
-                if(node->parent == NULL){
-                    node->value = child->value;
-                    node->left = child->left;
-                    node->right = child->right;
-                    free(child);
-                }
-                else if(sibling(node)->color == BLACK){
-                    // If the sibling of the node is black, there are multiple cases :
-                    station_node_queue *sib = sibling(child);
-                    if(sib->left->color == BLACK && sib->right->color == BLACK){
-                        // If both childrens of the sibling are black, we color the sibling in red and the node in black
-                        sib->color = RED;
-                        node->color = BLACK;
-                    }
-                    else if(sib->right->color == RED){
-                        // If the right child of the sibling is red, the sibling takes the color of its parent 
-                        // and the parent, the node and the right children of the sibling are colored in black.
-                        // We then do a left rotation on the parent of the node
-                        sib->color = node->parent->color;
-                        node->parent->color = BLACK;
-                        sib->right->color = BLACK;
-                        node->color = BLACK;
-                        left_rotate(node->parent);
-                    }
-                }
-                else if(sibling(node)->color == RED){
-                    // If the sibling of the node is red, we do a left rotation on the parent of the node
-                    node->parent->color = RED;
-                    left_rotate(node->parent);
-                    node->parent->parent->color = BLACK;
-                    // we can call the case where the sibling of the node is black 
-                }
-                else{
-                    // throw an error
-                    printf("ERROR in remove_from_queue");
-                    exit(1);
-                }
-                //TODO maybe delete
-                remove_from_queue(root, node->value);
-            }
-        }
+        remove_from_queue(root->right, value);
     }
-    
-    # if DEBUG_PRINT
-    print_queue(*root);
-    printf("--- End of open list ---\n");
-    # endif
-    # if DEBUG_MODE
-    assert(!is_in_queue(*root, value->station));
-    # endif
+    if(root == NULL)
+        return NULL;
+    print_queue_prefixe(root);
+    return rotate_tree(root);
 }
 
 
-// Remove the minimum node from the queue and return it
+// Remove the minimum node from the queue and return it. Be carefull to free the value after use
 station_node *unqueue(station_node_queue **root){
     station_node_queue *node = *root;
     while(node->left != NULL){
         node = node->left;
     }
     station_node *value = node->value;
-    remove_from_queue(root, node->value);
+    *root = remove_from_queue(*root, node->value);
     return value;
 }
 
-// Insert a node in the queue
-station_node_queue* insert_recursif(station_node_queue **root, station_node *value){
-    # if DEBUG_PRINT
-        printf("insert - a\n");
-    # endif
-    if(*root != NULL && (*root)->value != NULL && value->heuristic < (*root)->value->heuristic){
-        // If the queue is not empty and the value is smaller than the root, we insert it in the left subtree
-        # if DEBUG_PRINT
-            printf("insert - b\n");
-        # endif
-        if((*root)->left != NULL || (*root)->right != NULL){
-            // If the node is not a leaf, we insert the value in the left subtree
-            # if DEBUG_PRINT
-                printf("insert - ba\n");
-            # endif
-            insert_recursif(&(*root)->left, value);
-        }
-        else{
-            // If the node is a leaf, we create a new node and insert it in the left subtree
-            # if DEBUG_PRINT
-                printf("insert - bb\n");
-            # endif
-            station_node_queue *node = create_queue();
-            node->value = value;
-            node->parent = (*root);
-            node->color = RED;
-            (*root)->left = node;
-        }
-    }
-    else if(*root != NULL && (*root)->value != NULL){
-        // If the queue is not empty and the value is greater or equal than the root, we insert it in the right subtree
-        # if DEBUG_PRINT
-            printf("insert - c\n");
-        # endif
-        if((*root)->left != NULL || (*root)->right != NULL){
-            // If the node is not a leaf, we insert the value in the right subtree
-            # if DEBUG_PRINT
-                printf("insert - ca\n");
-            # endif
-            insert_recursif(&(*root)->right, value);
-        }
-        else{
-            // If the node is a leaf, we create a new node and insert it in the right subtree
-            # if DEBUG_PRINT
-                printf("insert - cc\n");
-            # endif
-            station_node_queue *node = create_queue();
-            node->value = value;
-            node->parent = (*root);
-            node->color = RED;
-            (*root)->right = node;
-        }
-    }
-    else{
-        // If the queue is empty, we create a new node and insert it in the root
-        # if DEBUG_PRINT
-            printf("insert - d\n");
-        # endif
-        free(*root);
-        *root = create_queue();
-        (*root)->value = value;
-        (*root)->color = BLACK;
-    }
-
-    #if DEBUG_PRINT
-    printf("Insert : %d\n", value->station->id);
-    #endif
-    #if DEBUG_MODE
-    if(root != NULL){
-        assert(is_in_queue(*root, value->station));
-    }
-    if((*root)->left != NULL){
-        assert((*root)->left != *root);
-    }
-    if((*root)->right != NULL){
-        assert((*root)->right != *root);
-    }
-    #endif
-
-    return (*root);
-}
-
-// Insert a node in the queue and repair the tree to balance it
-station_node_queue* insert_repair(station_node_queue **n){
-    station_node_queue *node = *n;
-    if(parent(node) == NULL){
-        node->color = BLACK;
-    }
-    else if(node->parent->color == BLACK){
-        
-    }
-    else if(uncle(node) != NULL && uncle(node)->color == RED){
-        parent(node)->color = BLACK;
-        uncle(node)->color = BLACK;
-        station_node_queue *gp = grandparent(node);
-        gp->color = RED;
-        node = insert_repair(&gp);
-    }
-    else{
-        station_node_queue *p = parent(node);
-        station_node_queue *gp = grandparent(node);
-
-        if (node == gp->left->right) {
-            left_rotate(p);
-            node = node->left;
-        } 
-        else if (node == gp->right->left) {
-            right_rotate(p);
-            node = node->right; 
-        }
-
-        if(node == p->left){
-            right_rotate(gp);
-        }
-        else{
-            left_rotate(gp);
-        }
-        p->color = BLACK;
-        gp->color = RED;
-    }
-    return node;
-}
 
 // Find the root of the tree and return it
 station_node_queue* find_root(station_node_queue *node){
@@ -527,7 +236,7 @@ station_node_queue* find_root(station_node_queue *node){
 }
 
 station_node * get_from_queue(station_node_queue *root, station_t *station){
-        if(root == NULL || root->value == NULL){
+    if(root == NULL || root->value == NULL){
         return NULL;
     }
     else if(root->value->station->id == station->id){
@@ -542,15 +251,57 @@ station_node * get_from_queue(station_node_queue *root, station_t *station){
     }
 }
 
+// Insert in an avl tree
+station_node_queue* insert(station_node_queue *root, station_node *node){
+    if(root == NULL || root->value == NULL){
+        if(root != NULL && root->value == NULL)
+            free(root);
+        root = create_queue();
+        root->value = node;
+        root->parent = NULL;
+        root->left = NULL;
+        root->right = NULL;
+        return root;
+    }
+    else if(node->heuristic <= root->value->heuristic){
+        if(root->left == NULL){
+            root->left = create_queue();
+            root->left->value = node;
+            root->left->parent = root;
+            root->left->left = NULL;
+            root->left->right = NULL;
+            return root;
+        }
+        else{
+            insert(root->left, node);
+        }
+    }
+    else {
+        if(root->right == NULL){
+            root->right = create_queue();
+            root->right->value = node;
+            root->right->parent = root;
+            root->right->left = NULL;
+            root->right->right = NULL;
+            return root;
+        }
+        else{
+            insert(root->right, node);
+        }
+    }
+
+    return rotate_tree(root);
+}
+
 // Add a node to the queue
 void add_to_queue(station_node_queue **root, station_node *value){
     station_node *tmp = get_from_queue(*root, value->station);
     if(tmp != NULL){
-        remove_from_queue(root, tmp);
+        *root = remove_from_queue(*root, tmp);
+        free(tmp);
     }
-    *root = insert_recursif(root, value);
-    *root = insert_repair(root);
-    *root = find_root(*root);
+
+    *root = insert(*root, value);
 }
 
 // Free the queue memory
@@ -560,7 +311,10 @@ void free_queue(station_node_queue **root){
     }
     station_node_queue * left = (*root)->left;
     station_node_queue * right = (*root)->right;
-    station_node_queue * parent = (*root)->parent;
+    //station_node_queue * parent = (*root)->parent;
+    printf("supp : %d\n", (*root)->value->station->id);
+    
+
     free((*root)->value);
     free((*root));
 
@@ -633,5 +387,19 @@ void print_queue(station_node_queue *root){
         print_queue(root->left);
         printf("%d : %f\n", root->value->station->id, root->value->heuristic);
         print_queue(root->right);
+    }
+}
+
+
+void print_queue_prefixe(station_node_queue *root){
+     if(root != NULL && root->value != NULL){
+        printf("%d(", root->value->station->id);
+        print_queue_prefixe(root->left);
+        printf(", ");
+        print_queue_prefixe(root->right);
+        printf(")");
+    }
+    else{
+        printf(" ");
     }
 }

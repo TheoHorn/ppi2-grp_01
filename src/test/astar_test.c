@@ -7,6 +7,9 @@
 
 int main()
 {
+    // TODO test  6513;14328;1.851004
+    //  16653 -> 12611
+
     /*// Normal path
     int depart = 20;
     int arrivee = 83;*/
@@ -27,6 +30,10 @@ int main()
     /*// Path not found with only one station
     int depart = 11885;
     int arrivee = 6596;*/
+
+    /* // Path not found that take a lot of time
+    int depart = 15770;
+    int arrivee = 139;*/
     
     /*// Strange path in Corsica ?
     int depart = 746;
@@ -35,8 +42,9 @@ int main()
     /*// Path that took a lot of time before
     int depart = 17393;
     int arrivee = 12752;*/
-
    
+    //int depart = 9602;
+    //int arrivee = 12217;
 
     csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
     station_t stations[DATASET_STATIONS_LINES];
