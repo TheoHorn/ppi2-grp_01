@@ -6,7 +6,7 @@ LDFLAGS+= -fsanitize=address
 LDFLAGS+= `pkg-config --libs gtk+-3.0`
 
 
-ALL_EXECUTABLES=parser_csv_test calculate_distance_test dijkstra_test time_distance_calcul_test degree_of_station_test france_map search_button graphics search_button_test france_map_test astar_test simulation_test graphics_test option_display_test options_user_test astar_perf
+ALL_EXECUTABLES=program parser_csv_test calculate_distance_test dijkstra_test time_distance_calcul_test degree_of_station_test france_map search_button graphics search_button_test france_map_test astar_test simulation_test graphics_test option_display_test options_user_test astar_perf
 ALL_O= parser_csv.o station.o car.o dijkstra.o astar.o station_node_priority_queue.o search_button.o france_map.o option_display.o options_user.o graphics.o simulation.o
 
 all: $(ALL_EXECUTABLES)
@@ -14,10 +14,11 @@ all: $(ALL_EXECUTABLES)
 create_o: $(ALL_O)
 
 # ---- Lancement du programm ----
-program: src/main.c
-	$(MAKE) needed.o
+program: src/graphics/graphics.o src/station.o src/utils/parser_csv.o src/astar.o src/station_node_priority_queue.o
+	$(MAKE) station.o parser_csv.o astar.o station_node_priority_queue.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 # -----------
+
 
 # --- .o ---
 parser_csv.o: src/utils/parser_csv.c src/utils/parser_csv.h
@@ -116,6 +117,7 @@ graphics_test: src/graphics/graphics.o src/station.o src/utils/parser_csv.o src/
 simulation_test: src/test/simulation_test.c src/simulation.o src/astar.o src/station.o src/utils/parser_csv.o src/station_node_priority_queue.o
 	$(MAKE) station.o parser_csv.o astar.o simulation.o station_node_priority_queue.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
 
 clean:
 	find . -name '*.o' -type f -delete

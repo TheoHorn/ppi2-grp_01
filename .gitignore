@@ -354,3 +354,4 @@ options_user_test
 astar_perf
 src/test/performances/perf_astar
 simulation_test
+program
