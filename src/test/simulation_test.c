@@ -24,7 +24,7 @@ int main()
         printf("\nAt %d minutes :", i*10);
         
         int state = current_position(stations, DATASET_STATIONS_LINES, cars, nb_simulations, i*10);
-        if(!print_charge_stations(stations, DATASET_STATIONS_LINES)) printf(" - ");
+        if(!print_charge_stations(stations, DATASET_STATIONS_LINES)) printf(" all cars on the road ");
         if(state == 1){
             printf(" All cars arrived at their destination");
             free_parsed_car(cars);
