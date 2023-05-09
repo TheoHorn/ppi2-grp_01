@@ -100,6 +100,7 @@ typedef struct WD{
     GtkWidget *ou_label4;
     GtkWidget *ou_spin4;
     GtkWidget *ou_label5;
+    GtkWidget *ou_label6;
     GtkWidget *ou_radio_button_box;
     GtkWidget *ou_radio_button_yes, *ou_radio_button_no;
     GtkWidget *ou_button;
@@ -247,7 +248,7 @@ void initialize(WD *wd){
     //fin data
 
     //research stations box
-    wd->ss_title = gtk_label_new("Recherche de stations");
+    wd->ss_title = gtk_label_new("Recherhe de la station de départ :");
     wd->ss_search_entry = gtk_entry_new();
     wd->ss_search_button = gtk_button_new_with_label("Rechercher");
     wd->ss_search_grid = gtk_grid_new();
@@ -274,7 +275,7 @@ void initialize(WD *wd){
     //fin research stations box
 
     //research car box
-    wd->sc_title = gtk_label_new("Recherche de voiture");
+    wd->sc_title = gtk_label_new("Recherche de la voiture utilisée :");
     wd->sc_search_entry = gtk_entry_new();
     wd->sc_search_button = gtk_button_new_with_label("Rechercher");
     wd->sc_search_grid = gtk_grid_new();
@@ -301,10 +302,14 @@ void initialize(WD *wd){
     //fin research car box
 
     //france map
-    wd->fm_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    wd->fm_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_margin_start(wd->fm_box, 0);
+    gtk_widget_set_margin_end(wd->fm_box, 10);
+    gtk_widget_set_margin_top(wd->fm_box, 0);
+    gtk_widget_set_margin_bottom(wd->fm_box, 10);
     wd->fm_drawing_area = gtk_drawing_area_new();
     gtk_widget_set_size_request(wd->fm_drawing_area, DRAWING_WIDTH, DRAWING_HEIGHT);
-    gtk_box_pack_start(GTK_BOX(wd->fm_box), wd->fm_drawing_area, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(wd->fm_box), wd->fm_drawing_area, FALSE, FALSE, 10);
     //fin france map
 
     //option user selection
@@ -316,11 +321,19 @@ void initialize(WD *wd){
     wd->ou_spin2 = gtk_spin_button_new(gtk_adjustment_new(100.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
     wd->ou_spin3 = gtk_spin_button_new(gtk_adjustment_new(95.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
     wd->ou_spin4 = gtk_spin_button_new(gtk_adjustment_new(60.0, 1.0, 120.0, 1.0, 1.0, 0.0), 1.0, 0);
-    wd->ou_label1 = gtk_label_new("Batterie minimal souhaité :");
-    wd->ou_label2 = gtk_label_new(", maximale :");
+    wd->ou_label1 = gtk_label_new(to_line("Intervalle dans lequel on veut s'arrêter pour recharger :",35));   
+    wd->ou_label6 = gtk_label_new("min :");
+    wd->ou_label2 = gtk_label_new(", max :");
     wd->ou_label3 = gtk_label_new("Batterie actuelle :");
-    wd->ou_label4 = gtk_label_new("Temps de recharge maximum souhaité (min):");
-    wd->ou_label5 = gtk_label_new("Prendre en compte les stations payantes ? :");
+    wd->ou_label4 = gtk_label_new(to_line("Temps de recharge maximum souhaité (min):",35));
+    wd->ou_label5 = gtk_label_new(to_line("Prendre en compte les stations payantes ? :",30));
+
+    gtk_label_set_xalign(GTK_LABEL(wd->ou_label1), 0.5);
+    gtk_label_set_xalign(GTK_LABEL(wd->ou_label2), 0.5);
+    gtk_label_set_xalign(GTK_LABEL(wd->ou_label3), 0.5);
+    gtk_label_set_xalign(GTK_LABEL(wd->ou_label4), 0.5);
+    gtk_label_set_xalign(GTK_LABEL(wd->ou_label5), 0.5);
+    gtk_label_set_xalign(GTK_LABEL(wd->ou_label6), 0.5);
 
     wd->ou_radio_button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_container_set_border_width(GTK_CONTAINER(wd->ou_radio_button_box), 10);
@@ -333,17 +346,19 @@ void initialize(WD *wd){
 
     gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_title, 0, 0, 2, 1);
     gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_label1, 0, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin1, 1, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_label2, 2, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin2, 3, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_label6, 1, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin1, 2, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_label2, 3, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin2, 4, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_label3, 0, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin3, 1, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin3, 1, 2, 2, 1);
     gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_label4, 0, 3, 1, 1);
-    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin4, 1, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_spin4, 1, 3, 2, 1);
     gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_label5, 0, 4, 1, 1);
-    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_radio_button_box, 1, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_radio_button_box, 1, 4, 2, 1);
     gtk_grid_attach(GTK_GRID(wd->ou_grid), wd->ou_button, 1, 5, 2, 1);
 
+    gtk_grid_set_column_spacing(GTK_GRID(wd->ou_grid), 10);
     gtk_box_pack_start(GTK_BOX(wd->ou_box), wd->ou_grid, TRUE, TRUE, 0);
     //fin option selection
 
@@ -709,7 +724,7 @@ void update_labels_after_research(int nb_valide, WD* wd, char** to_print, bool i
         gtk_label_set_text(label3, to_line(to_print[2],nb_carac));gtk_widget_show(GTK_WIDGET(button3));
         gtk_label_set_text(label4, to_line(to_print[3],nb_carac));gtk_widget_show(GTK_WIDGET(button4));
         char* txt5 = malloc(sizeof(char) * 100);
-        sprintf(txt5, "et %d stations supplémentaires ...", nb_valide - 4);
+        sprintf(txt5, "et %d éléments supplémentaires ...", nb_valide - 4);
         gtk_label_set_text(label5, txt5);gtk_widget_hide(GTK_WIDGET(button5));
         break;
     }
@@ -792,16 +807,20 @@ void on_search_car_button_clicked(GtkButton *button, gpointer data)
 */
 void on_use_station_clicked(GtkWidget *widget, gpointer data){
     WD *wd = (WD *) data;
+    GtkLabel * labelTitle = GTK_LABEL(wd->ss_title);
     GtkWidget *parent = gtk_widget_get_parent(widget);
     GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
     GtkWidget *first_child = GTK_WIDGET(children->data);
     GtkLabel *label = GTK_LABEL (first_child);
 
     if (strcmp(dataUser.borne_depart, "--") == 0){
+            gtk_label_set_text(labelTitle, "Recherche de la station d'arrivée :");
             strcpy(dataUser.borne_depart, (char*)gtk_label_get_text(label));
     }else if (strcmp(dataUser.borne_arrivee, "--") == 0){
+            gtk_label_set_text(labelTitle, "Recherche d'une nouvelle station de départ :");
             strcpy(dataUser.borne_arrivee, (char*)gtk_label_get_text(label));
     }else{
+            gtk_label_set_text(labelTitle, "Recherchez d'une nouvelle station d'arrivée :");
             strcpy(dataUser.borne_depart, (char*)gtk_label_get_text(label));
             strcpy(dataUser.borne_arrivee, "--");
             chemin.nbStations = 0; // On réinitialise le chemin
