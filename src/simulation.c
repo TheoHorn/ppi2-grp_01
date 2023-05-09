@@ -120,7 +120,7 @@ bool print_charge_stations(station_t stations[], int nbStations){
     for(int i=0; i<nbStations;i++){
         if(stations[i].num_cars_charging>stations[i].capacity){
             display = true;
-            printf("\nCharge stations %d : %d [full]", i, stations[i].num_cars_charging);
+            printf("\nOverloaded station %d : %d/%d [full] pending cars : %d", i,stations[i].capacity,stations[i].capacity,stations[i].num_cars_charging-stations[i].capacity);
             if(stations[i].car_queue != NULL){
                 destroy_queue(stations[i].car_queue);
             }
