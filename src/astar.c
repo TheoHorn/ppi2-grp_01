@@ -4,6 +4,9 @@
 #include <math.h>
 #include <string.h>
 
+# define DEBUG_PRINT false
+# define CLOSED_LIST_SIZE_MAX 30
+
 // Generate a fast path from the starting station to the last station
 station_t** path_generation(station_t stations[], int nbstations, data_algo_t *params){
     // Initialisation of the queues
@@ -23,16 +26,30 @@ station_t** path_generation(station_t stations[], int nbstations, data_algo_t *p
     // Car battery before the start
     starting_node->battery_after_charge = current_battery;
 
-    add_to_queue(openList, starting_node);
-    while(!queue_is_empty(openList)){
+    add_to_queue(&openList, starting_node);
+    int counter = 0;
+    while(!queue_is_empty(openList) && counter < CLOSED_LIST_SIZE_MAX){
         station_node *node = unqueue(&openList);
+        add_to_queue(&closedList, node);
+        counter++;
+
+
+        #if DEBUG_PRINT
+        printf("-----------------------------------------------\n");
+        printf("Tested node : %d : %s\n", node->station->id, node->station->name);
+        print_queue(openList);
+        printf("size_queue : %d\n", size_queue(openList));
+        printf("Size of closed list : %d\n", size_queue(closedList));
+        printf("-----------------------------------------------\n\n");
+        #endif
 
         // If the last station is in the open list, we have found the path
         if(node->station->id == last_station->id){ 
-            free_queue(openList);
+            //printf("Open list root id : %d", openList->value->station->id);
+            free_queue(&openList);
             station_t **path = reconstruct_path(node);
-            free(node);
-            free_queue(closedList);
+            //free(node);
+            free_queue(&closedList);
             return path;
         }
         else{
@@ -42,11 +59,9 @@ station_t** path_generation(station_t stations[], int nbstations, data_algo_t *p
 
             // Calculation of the adjacents stations (between dmax and dmin distance)
             station_node **neighbours = adjacentStations(stations, node, nbstations, last_station, distMax, distMin, only_free);
-
             int i = 0;
             while(neighbours[i]->station != NULL){
                 station_node *n = neighbours[i];
-
                 // If the station is not in the closed list and the station is not in the open list with a lower cost, we add it to the open list
                 // Else, we free the node because we have better solution
                 if(!is_in_queue(closedList, n->station) && !is_in_queue_with_lower_cost(openList, n)){
@@ -58,7 +73,7 @@ station_t** path_generation(station_t stations[], int nbstations, data_algo_t *p
                     // Calculation of the battery after the charge for max_time minutes in the station
                     n->battery_after_charge = fmin((max_time/60 * n->station->power + current_battery)/car->battery, 1);
                     
-                    add_to_queue(openList, n);
+                    add_to_queue(&openList, n);
                 }
                 else{
                     free(n);
@@ -68,13 +83,11 @@ station_t** path_generation(station_t stations[], int nbstations, data_algo_t *p
 
             free(neighbours[i]);
             free(neighbours);
-
-            add_to_queue(closedList, node);
         }
     }
     // If the open list is empty, no one path exists
-    free_queue(openList);
-    free_queue(closedList);
+    free_queue(&openList);
+    free_queue(&closedList);
     return NULL; 
 } 
 
@@ -106,7 +119,7 @@ station_node **adjacentStations(station_t stations[], station_node *node, int nb
 
 // Calculate an heuristic for the A* algorithm
 double calculate_heuristic(station_node *node, station_t *goal) {
-    return node->cost + distance(node->station, goal);
+    return node->cost +  1.1 * distance(node->station, goal);
 }
 
 

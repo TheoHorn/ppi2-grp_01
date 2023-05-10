@@ -5,16 +5,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 int main()
 {
-    //int depart = 20;
-    //int arrivee = 83;
-    //int depart = 14772;
-    //int arrivee = 12611;
-    //int depart = 746;
-    //int arrivee = 12070;
-    int depart = 17;
-    int arrivee = 24;
+    /*// Normal path
+    int depart = 20;
+    int arrivee = 83;*/
+
+    /*// Path 1 length
+    int depart = 13187;
+    int arrivee = 9597;*/
+
+    /*// Path 2 length
+    int depart = 1550;
+    int arrivee = 94;*/
+    
+    
+    /*// Path not found with depart in France (a lot of stations)
+    int depart = 14772;
+    int arrivee = 12611;*/
+
+    /*// Path not found with only one station
+    int depart = 11885;
+    int arrivee = 6596;*/
+
+    /* // Path not found that take a lot of time
+    int depart = 15770;
+    int arrivee = 139;*/
+    
+    /*// Strange path in Corsica ?
+    int depart = 746;
+    int arrivee = 12070;*/
+    
+    // Path that took a lot of time before
+    int depart = 17393;
+    int arrivee = 12752;
+   
+    //int depart = 9602;
+    //int arrivee = 12217;
 
     csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
     station_t stations[DATASET_STATIONS_LINES];
@@ -32,9 +60,9 @@ int main()
     params->borne_arrivee = &stations[arrivee];
     params->vehicule = car;
     params->min_bat = 0.2;
-    params->max_bat = 0.8;
-    params->current_bat = 0.5;
-    params->tps_recharge = 0.5;
+    params->max_bat = 0.5;
+    params->current_bat = 0.8;
+    params->tps_recharge = 20;
     params->payant = false;
 
     station_t** path = path_generation(stations, DATASET_STATIONS_LINES, params);

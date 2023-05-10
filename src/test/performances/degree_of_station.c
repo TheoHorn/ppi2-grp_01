@@ -30,7 +30,7 @@ int main(){
         degrees[i] = 0;
         for(int j = 0; j < DATASET_STATIONS_LINES; j++){
             if(j != i){
-                int d = distance(&stations[i], &stations[j]);
+                double d = distance(&stations[i], &stations[j]);
                 if(dmin < d && d < dmax){
                     degrees[i]++;
                 }
