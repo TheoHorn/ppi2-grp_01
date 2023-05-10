@@ -56,14 +56,12 @@ int get_balance(station_node_queue *root){
     }
     else{
         int tmp = abs(tree_height(root->left)) - abs(tree_height(root->right));
-        printf("Balance on %d : %d\n", root->value->station->id, tmp);
         return tmp;
     }
 }
 
 // Rotate the tree to the left
 station_node_queue* left_rotate(station_node_queue *node){
-    printf("left rotate on %d\n", node->value->station->id);
     station_node_queue *x = node;
     station_node_queue *y = node->right;
     y->parent = x->parent;
@@ -85,13 +83,11 @@ station_node_queue* left_rotate(station_node_queue *node){
         y->left = x;
     }
     x->parent = y;
-    printf("left rotate on %d done\n", node->value->station->id);
     return y;
 }   
 
 // Rotate the tree to the right
 station_node_queue* right_rotate(station_node_queue *node){
-    printf("right rotate on %d\n", node->value->station->id);
     station_node_queue *x = node;
     station_node_queue *y = node->left;
     y->parent = x->parent;
@@ -141,74 +137,93 @@ station_node_queue * rotate_tree(station_node_queue *root){
     return root;
 }
 
-// Remove a node from the queue
+// Remove a node from the queue and return the root
 station_node_queue *remove_from_queue(station_node_queue *root, station_node *value){
-    // TODO FAIRE REMOVE FROM QUEUE
     if(root == NULL || root->value == NULL){
-        assert(false);
         return NULL;
     }
     else if((root)->value->station->id == value->station->id){
-        if(root->left == NULL && root->right == NULL){
-            if(root->parent != NULL){
-                if(root->parent->right == root)
-                    root->parent->right = NULL;
-                else if(root->parent->left == root)
-                    root->parent->left = NULL;
+        // If we are on the good node
+        if(root->left != NULL && root->right != NULL){
+            // If both nodes are not null
+
+            // We need to find the rightest node of the left tree, exchange it with the node to delete, and delete the node
+            station_node_queue *tmp = root->left;
+            while(tmp->right != NULL){
+                tmp = tmp->right;
             }
+            station_node *tmp_value = root->value;
 
+            root->value = tmp->value;
+            tmp->value = tmp_value;    
 
-            free(root);
-            root = NULL;
-        }
-        else if(root->left != NULL){
-           station_node_queue *tmp = root->left;
-            
-            if(root->parent != NULL){
-                if(root->parent->right == root)
-                    root->parent->right = tmp;
-                else if(root->parent->left == root)
-                    root->parent->left = tmp;
-            }
-
-            tmp->parent = root->parent;
-
-            free(root);
-            root = tmp;
-
+            remove_from_queue(root->left, tmp_value);
+            return root;
         }
         else if(root->right != NULL){
-            station_node_queue *tmp = root->right;
-
-            if(root->parent != NULL){
-                if(root->parent->right == root)
-                    root->parent->right = tmp;
-                else if(root->parent->left == root)
-                    root->parent->left = tmp;
+            // If the right node is not null
+            if(root->parent == NULL){
+                root->right->parent = NULL;
+                station_node_queue *tmp = root->right;
+                free(root);
+                return tmp;
+            }
+            else if(root->parent->left == root){
+                root->parent->left = root->right;
+            }
+            else{
+                root->parent->right = root->right;
             }
 
-            tmp->parent = (root)->parent;
-
+            root->right->parent = root->parent;
             free(root);
-            root = tmp;
+            return NULL;
+        }
+        else if (root->left != NULL){
+            // If the left node is not null
+            if(root->parent == NULL){
+                root->left->parent = NULL;
+                station_node_queue *tmp = root->left;
+                free(root);
+                return tmp;
+            }
+            else if(root->parent->left == root){
+                root->parent->left = root->left;
+            }
+            else{
+                root->parent->right = root->left;
+            }
+
+            root->left->parent = root->parent;
+            free(root);
+            return NULL;
         }
         else{
-            station_node_queue *tmp = root->right;
-            // TODO
-            printf("Pas encore fait\n");
-            assert(false);
-
+            // If both nodes are null
+            if(root->parent == NULL){
+                free(root);
+                return NULL;
+            }
+            if(root->parent->left == root){
+                root->parent->left = NULL;
+            }
+            else{
+                root->parent->right = NULL;
+            }
+            free(root);
+            return NULL;
         }
     }
-    else if(value->station->id <= root->value->station->id){
+    else if(value->heuristic <= root->value->heuristic){
+        // If the value is smaller than the root, we go left
         remove_from_queue(root->left, value);
     }
     else{
+        // If the value is bigger than the root, we go right
         remove_from_queue(root->right, value);
     }
-    if(root == NULL)
-        return NULL;
-    print_queue_prefixe(root);
+    
+    // We test the balance of the tree and rotate it if needed
     return rotate_tree(root);
 }
 
@@ -235,7 +250,7 @@ station_node_queue* find_root(station_node_queue *node){
     }
 }
 
-station_node * get_from_queue(station_node_queue *root, station_t *station){
+station_node *get_from_queue(station_node_queue *root, station_t *station){
     if(root == NULL || root->value == NULL){
         return NULL;
     }
@@ -245,7 +260,7 @@ station_node * get_from_queue(station_node_queue *root, station_t *station){
     else{
         station_node *tmp = get_from_queue(root->left, station);
         if(tmp == NULL){
-            get_from_queue(root->right, station);
+            tmp = get_from_queue(root->right, station);
         }
         return tmp;
     }
@@ -298,7 +313,7 @@ void add_to_queue(station_node_queue **root, station_node *value){
     station_node *tmp = get_from_queue(*root, value->station);
     if(tmp != NULL){
         *root = remove_from_queue(*root, tmp);
-        free(tmp);
+        //free(tmp);
     }
 
     *root = insert(*root, value);
@@ -311,9 +326,7 @@ void free_queue(station_node_queue **root){
     }
     station_node_queue * left = (*root)->left;
     station_node_queue * right = (*root)->right;
-    //station_node_queue * parent = (*root)->parent;
-    printf("supp : %d\n", (*root)->value->station->id);
-    
+    //station_node_queue * parent = (*root)->parent;   
 
     free((*root)->value);
     free((*root));

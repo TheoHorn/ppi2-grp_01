@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-# define SIZE_ARRAY 5
+# define SIZE_ARRAY 10
 
 void free_parsed_station(station_t **stations){
     for (int i = 0; i < SIZE_ARRAY; i ++) {
@@ -28,10 +28,20 @@ void shuffle(int *array, size_t n) {
 
 int main(){
 
-    int tab[SIZE_ARRAY] = {0, 1, 2, 3, 4};
-    //shuffle(tab, SIZE_ARRAY);
+    int tab[SIZE_ARRAY] = {1, 2, 3, 3, 4, 5, 6, 8, 9, 5};
+    shuffle(tab, SIZE_ARRAY);
+    for(int i = 0; i < SIZE_ARRAY; i++){
+        printf("%d, ", tab[i]);
+    }
+    printf("\n");
     station_t *stations[SIZE_ARRAY];
     station_node_queue *root = create_queue();
+
+    int heuristics[SIZE_ARRAY] = {83, 86, 77, 15};
+    for(int i = 0; i < SIZE_ARRAY; i++){
+        heuristics[i] = (rand() % 100);
+        printf("%d, ", heuristics[i]);
+    }
     
     print_queue(root);
 
@@ -43,24 +53,31 @@ int main(){
         station->id = tab[i];
         station->name = "test";
         stations[i] = station;
-
-        add_to_queue(&root, create_station_node(station, tab[i], tab[i]));
+        
+        add_to_queue(&root, create_station_node(station, heuristics[i], heuristics[i]));
         print_queue_prefixe(root);
         printf("\n----------------\n");
     }
 
-    printf("aaaaaaa\n");
+    printf("End Insert\n---------------\nStart Delete\n\n");
 
     // Delete test
-    for(int i = 0; i < SIZE_ARRAY; i++){
+    /*for(int i = 0; i < SIZE_ARRAY; i++){
         printf("Delete : %d\n", stations[i]->id);
-        station_node *node = get_from_queue(root, stations[i]);
+         
+        station_node *value = get_from_queue(root, stations[i]);
 
-        remove_from_queue(root, node);
-        free(node);
-        print_queue(root);
-        printf("----------------\n");
-    }
+        if(value == NULL){
+            printf("Value not found\n");
+        }
+        printf("Value : %d\n", value->station->id);
+
+        root = remove_from_queue(root,value);
+        free(value);
+              
+        print_queue_prefixe(root);
+        printf("\n----------------\n");
+    }*/
     
     free_queue(&root);
     free_parsed_station(stations);

@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 
-# define DEBUG_PRINT true
+# define DEBUG_PRINT false
 # define CLOSED_LIST_SIZE_MAX 200
 
 // Generate a fast path from the starting station to the last station

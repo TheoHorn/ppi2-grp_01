@@ -18,9 +18,9 @@ int main()
     int depart = 13187;
     int arrivee = 9597;*/
 
-    // Path 2 length
+    /*// Path 2 length
     int depart = 1550;
-    int arrivee = 94;
+    int arrivee = 94;*/
     
     
     /*// Path not found with depart in France (a lot of stations)
