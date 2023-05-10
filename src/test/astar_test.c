@@ -5,8 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 int main()
 {
+
+    //int depart = 4132;
+    //int arrivee = 13392;
     // TODO test  6513;14328;1.851004
     //  16653 -> 12611
 

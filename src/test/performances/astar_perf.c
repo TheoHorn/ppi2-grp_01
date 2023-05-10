@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-# define NUMBER_OF_TESTS 200
+# define NUMBER_OF_TESTS 1000
 int main()
 {
 
@@ -62,9 +62,9 @@ int main()
         // Timer off  
         t = clock() - t;
         double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
-        if(time_taken > 1 && path != NULL){
+        /*if(time_taken > 1 && path != NULL){
             fprintf(f2, "%s :   %s (%d) ____> %s (%d)   | %f\n", car->name, stations[depart].name, depart, stations[arrivee].name, arrivee, time_taken);
-        }
+        }*/
         if(path != NULL){
             fprintf(f, "%d;%d;%d;%f\n", depart, arrivee, path_size(path, stations[arrivee]), time_taken);
         }

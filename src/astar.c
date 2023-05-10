@@ -5,7 +5,7 @@
 #include <string.h>
 
 # define DEBUG_PRINT false
-# define CLOSED_LIST_SIZE_MAX 200
+# define CLOSED_LIST_SIZE_MAX 30
 
 // Generate a fast path from the starting station to the last station
 station_t** path_generation(station_t stations[], int nbstations, data_algo_t *params){

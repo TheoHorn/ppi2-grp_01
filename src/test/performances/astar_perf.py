@@ -21,10 +21,11 @@ path_sizes = [x[0] for x in t]
 mean = mean(times)
 max = max(times)
 min = min(times)
+med = times[int(len(times)/2)]
 
 print(t[-1])
 
-print("Moyenne : %f\nMax : %f\nMin : %f" % (mean, max, min))
+print("Moyenne : %f\nMax : %f\nMin : %f\nMed : %f" % (mean, max, min, med))
 
 plt.plot(times)
 plt.ylabel("Temps d'exécution (s)")
