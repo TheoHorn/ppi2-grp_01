@@ -356,3 +356,4 @@ src/test/performances/perf_astar
 simulation_test
 program
 queue_test
+src/test/performances/path_not_found
