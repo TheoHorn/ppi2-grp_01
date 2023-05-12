@@ -28,4 +28,10 @@ void destroy_queue(list_car_t* queue);
 // display the car queue of a station
 void display_queue(list_car_t* queue);
 
+// return the number of cars at overloaded stations
+int car_at_overloaded_station(station_t stations[], int nbStations);
+
+// return the number of cars at not overloaded stations
+int car_at_station(station_t stations[], int nbStations);
+
 #endif
