@@ -11,7 +11,7 @@ int main()
     int nb_simulations = 15; // nb cars
     int nb_minutes = 1000; // each 10 minutes until nb_minutes
 
-    printf("Charging rate of stations for %d cars (in 10 minute steps)",nb_simulations);
+    printf("\nTaux de chargement des stations pour %d voitures (par pas de 10 minutes)",nb_simulations);
 
     for(int i=1; i<nb_minutes/10;i++){
         csv_reader_t reader = create_reader_default(DATASET_PATH_STATIONS);
@@ -21,12 +21,19 @@ int main()
         reader = create_reader_default(DATASET_PATH_CARS);
         assert(parse_to_car(&reader, cars) == 0);
         
-        printf("\nAt %d minutes :", i*10);
+        printf("\n\nA %d minutes :", i*10);
         
         int state = current_position(stations, DATASET_STATIONS_LINES, cars, nb_simulations, i*10);
-        if(!print_charge_stations(stations, DATASET_STATIONS_LINES)) printf(" all cars on the road ");
+        
+        int nb_at_station = car_at_station(stations, DATASET_STATIONS_LINES);
+        int nb_at_overloaded_station = car_at_overloaded_station(stations, DATASET_STATIONS_LINES);
+        int nb_on_road = nb_simulations - nb_at_station - nb_at_overloaded_station;
+
+        printf("\nVoitures sur la route %d/%d", nb_on_road, nb_simulations);
+        print_charge_stations(stations, DATASET_STATIONS_LINES);
+        
         if(state == 1){
-            printf(" All cars arrived at their destination");
+            printf("\n\nToutes les voitures sont arrivées à destination\n");
             free_parsed_car(cars);
             free_parsed_station(stations);
             break;

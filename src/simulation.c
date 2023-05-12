@@ -120,13 +120,35 @@ bool print_charge_stations(station_t stations[], int nbStations){
     for(int i=0; i<nbStations;i++){
         if(stations[i].num_cars_charging>stations[i].capacity){
             display = true;
-            printf("\nOverloaded station %d : %d/%d [full] pending cars : %d", i,stations[i].capacity,stations[i].capacity,stations[i].num_cars_charging-stations[i].capacity);
+            printf("\nStation n°%d surchargée : File d'attente de %d voitures", i,stations[i].num_cars_charging-stations[i].capacity);
             if(stations[i].car_queue != NULL){
                 destroy_queue(stations[i].car_queue);
             }
+        }else if(stations[i].num_cars_charging==stations[i].capacity){
+            printf("\nStation n°%d pleine : [%d/%d]", i,stations[i].num_cars_charging,stations[i].capacity);
         }
     }
     return display;
+}
+
+int car_at_station(station_t stations[], int nbStations){
+    int nb_cars = 0;
+    for(int i=0; i<nbStations;i++){
+        if(stations[i].num_cars_charging>0 && stations[i].num_cars_charging<=stations[i].capacity){
+            nb_cars += stations[i].num_cars_charging;
+        }
+    }
+    return nb_cars;
+}
+
+int car_at_overloaded_station(station_t stations[], int nbStations){
+    int nb_cars = 0;
+    for(int i=0; i<nbStations;i++){
+        if(stations[i].num_cars_charging>stations[i].capacity){
+            nb_cars += stations[i].num_cars_charging;
+        }
+    }
+    return nb_cars;
 }
 
 void create_queue_car(station_t* station, car_t* car){
