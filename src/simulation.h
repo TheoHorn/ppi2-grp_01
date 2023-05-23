@@ -5,7 +5,7 @@
 #include "time.h"
 
 // current position of the car at the time nbMinutes
-int current_position(station_t stations[], int nbStations, car_t car[], int nb_simulations, int nb_minutes);
+int current_position(station_t stations[], int nbStations, car_t car[], int nb_simulations, int nb_minutes, int depart, int arrivee);
 
 // free simulation parameters
 void free_parameters(int* param_cars, int* param_departures, int* param_arrivals);

@@ -7,7 +7,7 @@
 
 #define VITESSE 100 // km/h
 
-int current_position(station_t stations[], int nbStations, car_t car[], int nb_simulations, int nb_minutes){
+int current_position(station_t stations[], int nbStations, car_t car[], int nb_simulations, int nb_minutes, int depart, int arrivee){
 
     // we can change the parameters of the simulation
     int *param_cars = (int*)malloc(sizeof(int)*nb_simulations);
@@ -18,8 +18,8 @@ int current_position(station_t stations[], int nbStations, car_t car[], int nb_s
 
     for(int i=0; i<nb_simulations;i++){
         param_cars[i] = i;
-        param_departures[i] = 119;
-        param_arrivals[i] = 120;
+        param_departures[i] = depart;
+        param_arrivals[i] = arrivee;
         state_car[i] = -1;
     }
 
