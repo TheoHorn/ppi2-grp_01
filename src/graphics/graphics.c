@@ -317,8 +317,8 @@ void initialize(WD *wd){
     wd->ou_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     wd->ou_grid = gtk_grid_new();
     // Créer un GtkAdjustment pour gérer les valeurs du SpinButton
-    wd->ou_spin1 = gtk_spin_button_new(gtk_adjustment_new(90.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
-    wd->ou_spin2 = gtk_spin_button_new(gtk_adjustment_new(100.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
+    wd->ou_spin1 = gtk_spin_button_new(gtk_adjustment_new(20.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
+    wd->ou_spin2 = gtk_spin_button_new(gtk_adjustment_new(30.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
     wd->ou_spin3 = gtk_spin_button_new(gtk_adjustment_new(95.0, 1.0, 100.0, 1.0, 1.0, 0.0), 1.0, 0);
     wd->ou_spin4 = gtk_spin_button_new(gtk_adjustment_new(60.0, 1.0, 120.0, 1.0, 1.0, 0.0), 1.0, 0);
     wd->ou_label1 = gtk_label_new(to_line("Intervalle dans lequel on veut s'arrêter pour recharger :",35));   
